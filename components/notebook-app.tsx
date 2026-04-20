@@ -1,53 +1,130 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
-import type { Pattern, PatternRow } from '@/types/pattern';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { createSupabaseBrowserClient } from '@/lib/supabase';
+import type { Pattern, PatternRow, Stitch } from '@/types/pattern';
 
 type Tab = 'library' | 'archived' | 'stats';
 
-const uid = () => crypto.randomUUID();
+type DbPattern = {
+  id: string;
+  user_id: string;
+  name: string;
+  archived: boolean;
+  activity: string[];
+  created_at: string;
+};
 
-const seedRows = (): PatternRow[] => [
-  {
-    id: uid(),
-    title: 'Foundation row',
-    note: 'Start with a comfortable tension.',
-    done: false,
-    stitches: [
-      { id: uid(), name: 'SC', count: 24 },
-      { id: uid(), name: 'CH', count: 1 },
-    ],
-  },
-  {
-    id: uid(),
-    title: 'Body row',
-    done: false,
-    stitches: [{ id: uid(), name: 'HDC', count: 24 }],
-  },
-];
+type DbRow = {
+  id: string;
+  pattern_id: string;
+  position: number;
+  title: string;
+  stitches: Stitch[];
+  note: string | null;
+  done: boolean;
+};
 
-const initialPatterns: Pattern[] = [
-  {
-    id: uid(),
-    name: 'Beginner dishcloth',
-    archived: false,
-    createdAt: new Date().toISOString(),
-    rows: seedRows(),
-  },
-];
+const supabase = createSupabaseBrowserClient();
+
+const mapPatterns = (patterns: DbPattern[], rows: DbRow[]): Pattern[] => {
+  const rowsByPattern = new Map<string, PatternRow[]>();
+
+  rows.forEach((row) => {
+    const nextRow: PatternRow = {
+      id: row.id,
+      position: row.position,
+      title: row.title,
+      note: row.note ?? undefined,
+      done: row.done,
+      stitches: Array.isArray(row.stitches) ? row.stitches : [],
+    };
+
+    const existing = rowsByPattern.get(row.pattern_id) ?? [];
+    existing.push(nextRow);
+    rowsByPattern.set(row.pattern_id, existing);
+  });
+
+  return patterns.map((pattern) => ({
+    id: pattern.id,
+    name: pattern.name,
+    archived: pattern.archived,
+    activity: pattern.activity ?? [],
+    createdAt: pattern.created_at,
+    rows: (rowsByPattern.get(pattern.id) ?? []).sort((a, b) => a.position - b.position),
+  }));
+};
+
+const todayIsoDate = () => new Date().toISOString().slice(0, 10);
 
 export function NotebookApp() {
   const [tab, setTab] = useState<Tab>('library');
-  const [patterns, setPatterns] = useState<Pattern[]>(initialPatterns);
+  const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [newPatternName, setNewPatternName] = useState('');
-  const [selectedPatternId, setSelectedPatternId] = useState<string | null>(
-    initialPatterns[0]?.id ?? null,
-  );
+  const [selectedPatternId, setSelectedPatternId] = useState<string | null>(null);
 
   const [newRowTitle, setNewRowTitle] = useState('');
   const [newRowStitch, setNewRowStitch] = useState('SC');
   const [newRowCount, setNewRowCount] = useState(12);
   const [newRowNote, setNewRowNote] = useState('');
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        setError(authError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        setError('Sign in to view your patterns.');
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: patternData, error: patternError } = await supabase
+        .from('patterns')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (patternError) {
+        setError(patternError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      const patternIds = (patternData ?? []).map((pattern) => pattern.id);
+
+      const { data: rowData, error: rowError } = patternIds.length
+        ? await supabase
+            .from('rows')
+            .select('*')
+            .in('pattern_id', patternIds)
+            .order('position', { ascending: true })
+        : { data: [], error: null };
+
+      if (rowError) {
+        setError(rowError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      const mapped = mapPatterns((patternData ?? []) as DbPattern[], (rowData ?? []) as DbRow[]);
+      setPatterns(mapped);
+      setSelectedPatternId((current) => current ?? mapped[0]?.id ?? null);
+      setIsLoading(false);
+    };
+
+    load();
+  }, []);
 
   const filteredPatterns = useMemo(
     () => patterns.filter((pattern) => pattern.archived === (tab === 'archived')),
@@ -63,16 +140,38 @@ export function NotebookApp() {
   const totalRows = selectedPattern?.rows.length ?? 0;
   const progress = totalRows ? Math.round((completedRows / totalRows) * 100) : 0;
 
-  const savePattern = (event: FormEvent) => {
+  const savePattern = async (event: FormEvent) => {
     event.preventDefault();
     const name = newPatternName.trim();
     if (!name) return;
 
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user?.id;
+    if (!userId) {
+      setError('Sign in to create a pattern.');
+      return;
+    }
+
+    const { data, error: insertError } = await supabase
+      .from('patterns')
+      .insert({
+        user_id: userId,
+        name,
+      })
+      .select('*')
+      .single();
+
+    if (insertError) {
+      setError(insertError.message);
+      return;
+    }
+
     const created: Pattern = {
-      id: uid(),
-      name,
-      archived: false,
-      createdAt: new Date().toISOString(),
+      id: data.id,
+      name: data.name,
+      archived: data.archived,
+      activity: data.activity ?? [],
+      createdAt: data.created_at,
       rows: [],
     };
 
@@ -82,18 +181,36 @@ export function NotebookApp() {
     setNewPatternName('');
   };
 
-  const addRow = (event: FormEvent) => {
+  const addRow = async (event: FormEvent) => {
     event.preventDefault();
     if (!selectedPattern) return;
 
     const title = newRowTitle.trim() || `Row ${selectedPattern.rows.length + 1}`;
 
+    const { data, error: insertError } = await supabase
+      .from('rows')
+      .insert({
+        pattern_id: selectedPattern.id,
+        position: selectedPattern.rows.length,
+        title,
+        note: newRowNote.trim() || null,
+        stitches: [{ id: crypto.randomUUID(), name: newRowStitch, count: newRowCount }],
+      })
+      .select('*')
+      .single();
+
+    if (insertError) {
+      setError(insertError.message);
+      return;
+    }
+
     const createdRow: PatternRow = {
-      id: uid(),
-      title,
-      note: newRowNote.trim(),
-      done: false,
-      stitches: [{ id: uid(), name: newRowStitch, count: newRowCount }],
+      id: data.id,
+      position: data.position,
+      title: data.title,
+      note: data.note ?? undefined,
+      done: data.done,
+      stitches: Array.isArray(data.stitches) ? data.stitches : [],
     };
 
     setPatterns((previous) =>
@@ -109,27 +226,71 @@ export function NotebookApp() {
     setNewRowNote('');
   };
 
-  const toggleRow = (patternId: string, rowId: string) => {
+  const toggleRow = async (patternId: string, rowId: string, nextDone: boolean) => {
+    const { error: rowError } = await supabase
+      .from('rows')
+      .update({ done: nextDone })
+      .eq('id', rowId)
+      .eq('pattern_id', patternId);
+
+    if (rowError) {
+      setError(rowError.message);
+      return;
+    }
+
+    if (nextDone) {
+      const today = todayIsoDate();
+      const pattern = patterns.find((entry) => entry.id === patternId);
+      const nextActivity = pattern?.activity.includes(today)
+        ? pattern.activity
+        : [...(pattern?.activity ?? []), today];
+
+      const { error: patternError } = await supabase
+        .from('patterns')
+        .update({ activity: nextActivity })
+        .eq('id', patternId);
+
+      if (patternError) {
+        setError(patternError.message);
+        return;
+      }
+    }
+
     setPatterns((previous) =>
-      previous.map((pattern) =>
-        pattern.id !== patternId
-          ? pattern
-          : {
-              ...pattern,
-              rows: pattern.rows.map((row) =>
-                row.id === rowId ? { ...row, done: !row.done } : row,
-              ),
-            },
-      ),
+      previous.map((pattern) => {
+        if (pattern.id !== patternId) return pattern;
+
+        const nextActivity = nextDone
+          ? pattern.activity.includes(todayIsoDate())
+            ? pattern.activity
+            : [...pattern.activity, todayIsoDate()]
+          : pattern.activity;
+
+        return {
+          ...pattern,
+          activity: nextActivity,
+          rows: pattern.rows.map((row) =>
+            row.id === rowId ? { ...row, done: nextDone } : row,
+          ),
+        };
+      }),
     );
   };
 
-  const toggleArchived = (patternId: string) => {
+  const toggleArchived = async (patternId: string, archived: boolean) => {
+    const { error: updateError } = await supabase
+      .from('patterns')
+      .update({ archived })
+      .eq('id', patternId);
+
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
     setPatterns((previous) =>
       previous.map((pattern) =>
-        pattern.id === patternId
-          ? { ...pattern, archived: !pattern.archived }
-          : pattern,
+        pattern.id === patternId ? { ...pattern, archived } : pattern,
       ),
     );
   };
@@ -174,6 +335,9 @@ export function NotebookApp() {
       </aside>
 
       <main className="main-content">
+        {isLoading ? <p className="muted">Loading patterns...</p> : null}
+        {error ? <p className="muted">{error}</p> : null}
+
         {tab === 'stats' ? (
           <section className="stats-grid">
             <article className="card">
@@ -223,7 +387,7 @@ export function NotebookApp() {
                         </button>
                         <button
                           className="ghost"
-                          onClick={() => toggleArchived(pattern.id)}
+                          onClick={() => toggleArchived(pattern.id, !pattern.archived)}
                         >
                           {pattern.archived ? 'Unarchive' : 'Archive'}
                         </button>
@@ -251,12 +415,14 @@ export function NotebookApp() {
                     {selectedPattern.rows.map((row) => (
                       <li key={row.id}>
                         <button
-                          onClick={() => toggleRow(selectedPattern.id, row.id)}
+                          onClick={() => toggleRow(selectedPattern.id, row.id, !row.done)}
                           className={row.done ? 'done' : ''}
                         >
                           <span>{row.title}</span>
                           <small>
-                            {row.stitches.map((stitch) => `${stitch.count}× ${stitch.name}`).join(' · ')}
+                            {row.stitches
+                              .map((stitch) => `${stitch.count}× ${stitch.name}`)
+                              .join(' · ')}
                           </small>
                           {row.note ? <em>{row.note}</em> : null}
                         </button>
@@ -302,17 +468,6 @@ export function NotebookApp() {
             </section>
           </>
         )}
-
-        <section className="card supabase-note">
-          <h2>Supabase hook-up</h2>
-          <p>
-            This UI is prepared for Supabase auth/storage. Next steps are to wire
-            sessions and persist patterns in your Supabase tables.
-          </p>
-          <pre>{`// Example (client)
-import { createSupabaseBrowserClient } from '@/lib/supabase';
-const supabase = createSupabaseBrowserClient();`}</pre>
-        </section>
       </main>
     </div>
   );
