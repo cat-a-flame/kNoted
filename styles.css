@@ -1,0 +1,146 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+:root {
+  --bg: #f7f4ef;
+  --surface: #fff;
+  --surface2: #f0ede7;
+  --border: rgba(0, 0, 0, 0.09);
+  --border2: rgba(0, 0, 0, 0.17);
+  --text: #1c1a17;
+  --text2: #6b6660;
+  --text3: #a09b96;
+  --teal: #1d9e75;
+  --teal-l: #e1f5ee;
+  --teal-m: #9fe1cb;
+  --teal-d: #085041;
+  --coral: #d85a30;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --serif: 'Lora', Georgia, serif;
+}
+html,
+body,
+#root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+}
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.topbar {
+  height: 56px;
+  padding: 0 22px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar-title {
+  font-family: var(--serif);
+}
+.content {
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+button,
+input,
+select {
+  font-family: var(--sans);
+}
+.btn {
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border2);
+  background: transparent;
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--surface2);
+}
+.btn.teal {
+  background: var(--teal-l);
+  border-color: var(--teal-m);
+  color: var(--teal-d);
+}
+.badge {
+  font-size: 11px;
+  color: var(--text2);
+}
+.in {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+.pattern-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 8px;
+}
+.pattern-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pill {
+  font-size: 12px;
+  background: var(--surface2);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.error {
+  color: var(--coral);
+  font-size: 13px;
+}
+.note {
+  color: var(--text2);
+  font-size: 13px;
+}
+@media (max-width: 700px) {
+  .topbar {
+    padding: 0 14px;
+  }
+}
