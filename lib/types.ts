@@ -11,6 +11,7 @@ export type Row = {
   stitches: Stitch[];
   note: string | null;
   done: boolean;
+  section: string | null;
 };
 
 export type Pattern = {

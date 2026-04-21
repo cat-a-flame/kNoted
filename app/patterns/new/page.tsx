@@ -15,6 +15,7 @@ type DraftRow = {
   title: string;
   stitches: Stitch[];
   note: string;
+  section: string;
 };
 
 export default function NewPatternPage() {
@@ -28,14 +29,21 @@ export default function NewPatternPage() {
   const [rowTitle, setRowTitle] = useState('');
   const [rowStitches, setRowStitches] = useState<Stitch[]>([]);
   const [rowNote, setRowNote] = useState('');
+  const [rowSection, setRowSection] = useState('');
   const [draftRows, setDraftRows] = useState<DraftRow[]>([]);
+
+  const existingDraftSections = Array.from(new Set(draftRows.map((r) => r.section).filter(Boolean)));
 
   const addDraftRow = () => {
     const title = rowTitle.trim() || `Row ${draftRows.length + 1}`;
-    setDraftRows((prev) => [...prev, { title, stitches: rowStitches, note: rowNote.trim() }]);
+    setDraftRows((prev) => [
+      ...prev,
+      { title, stitches: rowStitches, note: rowNote.trim(), section: rowSection.trim() },
+    ]);
     setRowTitle('');
     setRowStitches([]);
     setRowNote('');
+    setRowSection('');
   };
 
   const removeDraftRow = (index: number) => {
@@ -70,6 +78,7 @@ export default function NewPatternPage() {
           title: row.title,
           stitches: row.stitches,
           note: row.note || null,
+          section: row.section || null,
           done: false,
         })),
       );
@@ -78,6 +87,18 @@ export default function NewPatternPage() {
 
     router.push(`/patterns/${pattern.id}`);
   };
+
+  // Build section groups for draft rows preview (preserving first-appearance order)
+  const draftGroups: { section: string; items: { row: DraftRow; index: number }[] }[] = [];
+  const draftSectionMap = new Map<string, number>();
+  draftRows.forEach((row, i) => {
+    const key = row.section || '';
+    if (!draftSectionMap.has(key)) {
+      draftSectionMap.set(key, draftGroups.length);
+      draftGroups.push({ section: key, items: [] });
+    }
+    draftGroups[draftSectionMap.get(key)!].items.push({ row, index: i });
+  });
 
   return (
     <div className="flex min-h-screen">
@@ -125,6 +146,23 @@ export default function NewPatternPage() {
                   />
                 </div>
                 <div>
+                  <label className="block text-xs font-medium text-text-secondary mb-1">Section (optional)</label>
+                  <input
+                    value={rowSection}
+                    onChange={(e) => setRowSection(e.target.value)}
+                    placeholder="e.g. Stem, Cap…"
+                    list="draft-sections-list"
+                    className="w-full border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+                  />
+                  {existingDraftSections.length > 0 && (
+                    <datalist id="draft-sections-list">
+                      {existingDraftSections.map((s) => (
+                        <option key={s} value={s} />
+                      ))}
+                    </datalist>
+                  )}
+                </div>
+                <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1">Stitches</label>
                   <StitchBuilder stitches={rowStitches} onChange={setRowStitches} />
                 </div>
@@ -147,38 +185,53 @@ export default function NewPatternPage() {
               </div>
             </div>
 
-            {/* Draft rows list */}
+            {/* Draft rows preview grouped by section */}
             {draftRows.length > 0 && (
-              <div className="flex flex-col gap-2">
-                {draftRows.map((row, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-3 bg-surface border border-black/[0.09] rounded-md p-3"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center text-xs font-bold text-text-secondary shrink-0">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary">{row.title}</p>
-                      {row.stitches.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {row.stitches.map((s, si) => (
-                            <StitchPill key={si} stitch={s} />
-                          ))}
+              <div className="flex flex-col gap-4">
+                {draftGroups.map(({ section, items }, groupIndex) => (
+                  <div key={section || '__none__'}>
+                    {section && (
+                      <h3
+                        className={`text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2 px-1 ${
+                          groupIndex > 0 ? 'mt-2' : ''
+                        }`}
+                      >
+                        {section}
+                      </h3>
+                    )}
+                    <div className="flex flex-col gap-2">
+                      {items.map(({ row, index: i }) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-3 bg-surface border border-black/[0.09] rounded-md p-3"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center text-xs font-bold text-text-secondary shrink-0">
+                            {i + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-text-primary">{row.title}</p>
+                            {row.stitches.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {row.stitches.map((s, si) => (
+                                  <StitchPill key={si} stitch={s} />
+                                ))}
+                              </div>
+                            )}
+                            {row.note && <p className="text-xs text-text-secondary italic mt-1">{row.note}</p>}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeDraftRow(i)}
+                            className="text-text-tertiary hover:text-coral transition-colors shrink-0"
+                            aria-label="Remove row"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8l1-10" />
+                            </svg>
+                          </button>
                         </div>
-                      )}
-                      {row.note && <p className="text-xs text-text-secondary italic mt-1">{row.note}</p>}
+                      ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeDraftRow(i)}
-                      className="text-text-tertiary hover:text-coral transition-colors shrink-0"
-                      aria-label="Remove row"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8l1-10" />
-                      </svg>
-                    </button>
                   </div>
                 ))}
               </div>

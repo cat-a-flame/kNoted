@@ -25,6 +25,7 @@ export default function PatternPage() {
   const [newTitle, setNewTitle] = useState('');
   const [newStitches, setNewStitches] = useState<Stitch[]>([]);
   const [newNote, setNewNote] = useState('');
+  const [newSection, setNewSection] = useState('');
 
   const didScrollRef = useRef(false);
 
@@ -80,7 +81,7 @@ export default function PatternPage() {
   );
 
   const handleEdit = useCallback(
-    async (rowId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => {
+    async (rowId: string, data: { title: string; stitches: Stitch[]; note: string | null; section: string | null }) => {
       const supabase = createClient();
       const { error } = await supabase.from('rows').update(data).eq('id', rowId);
       if (error) { setToast({ message: error.message, variant: 'error' }); return; }
@@ -108,6 +109,7 @@ export default function PatternPage() {
           title: `${source.title} (copy)`,
           stitches: source.stitches,
           note: source.note,
+          section: source.section,
           done: false,
         })
         .select('*')
@@ -154,6 +156,7 @@ export default function PatternPage() {
         title,
         stitches: newStitches,
         note: newNote.trim() || null,
+        section: newSection.trim() || null,
         done: false,
       })
       .select('*')
@@ -164,6 +167,7 @@ export default function PatternPage() {
     setNewTitle('');
     setNewStitches([]);
     setNewNote('');
+    setNewSection('');
   };
 
   if (loading) {
@@ -283,6 +287,23 @@ export default function PatternPage() {
                       placeholder={`Row ${rows.length + 1}`}
                       className="w-full border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-text-secondary mb-1">
+                      Section (optional)
+                    </label>
+                    <input
+                      value={newSection}
+                      onChange={(e) => setNewSection(e.target.value)}
+                      placeholder="e.g. Stem, Cap…"
+                      list="side-panel-sections"
+                      className="w-full border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+                    />
+                    <datalist id="side-panel-sections">
+                      {Array.from(new Set(rows.map((r) => r.section).filter((s): s is string => s !== null))).map((s) => (
+                        <option key={s} value={s} />
+                      ))}
+                    </datalist>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-text-secondary mb-1">

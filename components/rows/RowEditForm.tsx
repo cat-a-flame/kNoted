@@ -6,20 +6,27 @@ import { StitchBuilder } from './StitchBuilder';
 
 interface RowEditFormProps {
   row: Row;
-  onSave: (data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
+  existingSections?: string[];
+  onSave: (data: { title: string; stitches: Stitch[]; note: string | null; section: string | null }) => Promise<void>;
   onCancel: () => void;
 }
 
-export function RowEditForm({ row, onSave, onCancel }: RowEditFormProps) {
+export function RowEditForm({ row, existingSections = [], onSave, onCancel }: RowEditFormProps) {
   const [title, setTitle] = useState(row.title);
   const [stitches, setStitches] = useState<Stitch[]>(row.stitches);
   const [note, setNote] = useState(row.note ?? '');
+  const [section, setSection] = useState(row.section ?? '');
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await onSave({ title: title.trim() || row.title, stitches, note: note.trim() || null });
+    await onSave({
+      title: title.trim() || row.title,
+      stitches,
+      note: note.trim() || null,
+      section: section.trim() || null,
+    });
     setSaving(false);
   };
 
@@ -32,6 +39,24 @@ export function RowEditForm({ row, onSave, onCancel }: RowEditFormProps) {
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
         />
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-text-secondary mb-1">Section (optional)</label>
+        <input
+          value={section}
+          onChange={(e) => setSection(e.target.value)}
+          placeholder="e.g. Stem, Cap…"
+          list="row-edit-sections"
+          className="w-full border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+        />
+        {existingSections.length > 0 && (
+          <datalist id="row-edit-sections">
+            {existingSections.map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
+        )}
       </div>
 
       <div>
