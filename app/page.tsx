@@ -1,5 +1,5 @@
-import { NotebookApp } from '@/components/notebook-app';
+import { redirect } from 'next/navigation';
 
 export default function HomePage() {
-  return <NotebookApp />;
+  redirect('/patterns');
 }
