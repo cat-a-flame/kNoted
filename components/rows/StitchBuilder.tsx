@@ -10,9 +10,24 @@ interface StitchBuilderProps {
   onChange: (stitches: Stitch[]) => void;
 }
 
+function DragHandle() {
+  return (
+    <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" className="text-text-tertiary shrink-0">
+      <circle cx="2" cy="2" r="1" />
+      <circle cx="6" cy="2" r="1" />
+      <circle cx="2" cy="6" r="1" />
+      <circle cx="6" cy="6" r="1" />
+      <circle cx="2" cy="10" r="1" />
+      <circle cx="6" cy="10" r="1" />
+    </svg>
+  );
+}
+
 export function StitchBuilder({ stitches, onChange }: StitchBuilderProps) {
   const [selectedName, setSelectedName] = useState(STITCHES[0].name);
   const [count, setCount] = useState(1);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const add = () => {
     if (count < 1) return;
@@ -22,6 +37,32 @@ export function StitchBuilder({ stitches, onChange }: StitchBuilderProps) {
 
   const remove = (index: number) => {
     onChange(stitches.filter((_, i) => i !== index));
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (index !== dragOverIndex) setDragOverIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === toIndex) { cleanup(); return; }
+    const next = [...stitches];
+    const [moved] = next.splice(dragIndex, 1);
+    next.splice(toIndex, 0, moved);
+    onChange(next);
+    cleanup();
+  };
+
+  const cleanup = () => {
+    setDragIndex(null);
+    setDragOverIndex(null);
   };
 
   return (
@@ -57,7 +98,18 @@ export function StitchBuilder({ stitches, onChange }: StitchBuilderProps) {
       {stitches.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {stitches.map((stitch, i) => (
-            <div key={i} className="flex items-center gap-1">
+            <div
+              key={i}
+              draggable
+              onDragStart={(e) => handleDragStart(e, i)}
+              onDragOver={(e) => handleDragOver(e, i)}
+              onDrop={(e) => handleDrop(e, i)}
+              onDragEnd={cleanup}
+              className={`flex items-center gap-1 rounded-sm transition-opacity cursor-grab active:cursor-grabbing select-none ${
+                dragIndex === i ? 'opacity-40' : 'opacity-100'
+              } ${dragOverIndex === i && dragIndex !== i ? 'ring-2 ring-teal ring-offset-1' : ''}`}
+            >
+              <DragHandle />
               <StitchPill stitch={stitch} />
               <button
                 type="button"
