@@ -32,5 +32,6 @@ export type Pattern = {
   archived: boolean;
   activity: string[];
   created_at: string;
+  cover_url: string | null;
   sections?: Section[];
 };
