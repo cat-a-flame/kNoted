@@ -16,7 +16,7 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: 'kNoted',
-  description: 'Your crochet pattern notebook',
+  description: 'Your crochet project notebook',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

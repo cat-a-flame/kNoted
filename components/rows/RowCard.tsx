@@ -58,7 +58,7 @@ export function RowCard({
             : 'bg-surface-2 text-text-secondary'
         }`}
       >
-        {index + 1}
+        {index}
       </div>
 
       <div className="flex-1 min-w-0">

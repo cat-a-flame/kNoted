@@ -5,7 +5,7 @@ export type Stitch = {
 
 export type Section = {
   id: string;
-  pattern_id: string;
+  project_id: string;
   position: number;
   name: string;
   yarn_name: string | null;
@@ -25,7 +25,7 @@ export type Row = {
   done: boolean;
 };
 
-export type Pattern = {
+export type Project = {
   id: string;
   user_id: string;
   name: string;

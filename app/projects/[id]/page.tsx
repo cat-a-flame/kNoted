@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { Pattern, Section, Row, Stitch } from '@/lib/types';
+import { Project, Section, Row, Stitch } from '@/lib/types';
 import { todayIso } from '@/lib/utils';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
@@ -27,14 +27,16 @@ function CoverPlaceholder() {
   );
 }
 
-export default function PatternPage() {
+export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
 
-  const [pattern, setPattern] = useState<Pattern | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
 
   const didScrollRef = useRef(false);
@@ -42,14 +44,14 @@ export default function PatternPage() {
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
-      const { data: p } = await supabase.from('patterns').select('*').eq('id', id).single();
+      const { data: p } = await supabase.from('projects').select('*').eq('id', id).single();
       const { data: s } = await supabase
         .from('sections')
         .select('*, rows(*)')
-        .eq('pattern_id', id)
+        .eq('project_id', id)
         .order('position', { ascending: true })
         .order('position', { ascending: true, foreignTable: 'rows' });
-      setPattern(p ?? null);
+      setProject(p ?? null);
       setSections((s ?? []) as Section[]);
       setLoading(false);
     };
@@ -70,6 +72,17 @@ export default function PatternPage() {
     }
   }, [loading, firstIncompleteRowId]);
 
+  const submitRename = useCallback(async () => {
+    const trimmed = renameValue.trim();
+    if (!trimmed || trimmed === project?.name) { setIsRenaming(false); return; }
+    const supabase = createClient();
+    const { error } = await supabase.from('projects').update({ name: trimmed }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); setIsRenaming(false); return; }
+    setProject((prev) => (prev ? { ...prev, name: trimmed } : prev));
+    setIsRenaming(false);
+    setToast({ message: 'Project renamed.', variant: 'success' });
+  }, [id, renameValue, project?.name]);
+
   const handleCoverChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -84,8 +97,8 @@ export default function PatternPage() {
       if (error) { setToast({ message: error.message, variant: 'error' }); setCoverUploading(false); return; }
       const { data } = supabase.storage.from('pattern-covers').getPublicUrl(path);
       const url = `${data.publicUrl}?v=${Date.now()}`;
-      await supabase.from('patterns').update({ cover_url: data.publicUrl }).eq('id', id);
-      setPattern((prev) => (prev ? { ...prev, cover_url: url } : prev));
+      await supabase.from('projects').update({ cover_url: data.publicUrl }).eq('id', id);
+      setProject((prev) => (prev ? { ...prev, cover_url: url } : prev));
       setToast({ message: 'Cover image saved.', variant: 'success' });
       setCoverUploading(false);
       e.target.value = '';
@@ -95,8 +108,8 @@ export default function PatternPage() {
 
   const handleRemoveCover = useCallback(async () => {
     const supabase = createClient();
-    await supabase.from('patterns').update({ cover_url: null }).eq('id', id);
-    setPattern((prev) => (prev ? { ...prev, cover_url: null } : prev));
+    await supabase.from('projects').update({ cover_url: null }).eq('id', id);
+    setProject((prev) => (prev ? { ...prev, cover_url: null } : prev));
     setToast({ message: 'Cover image removed.', variant: 'success' });
   }, [id]);
 
@@ -106,12 +119,12 @@ export default function PatternPage() {
       const { error } = await supabase.from('rows').update({ done: nextDone }).eq('id', rowId);
       if (error) { setToast({ message: error.message, variant: 'error' }); return; }
 
-      if (nextDone && pattern) {
+      if (nextDone && project) {
         const today = todayIso();
-        if (!pattern.activity.includes(today)) {
-          const nextActivity = [...pattern.activity, today];
-          await supabase.from('patterns').update({ activity: nextActivity }).eq('id', id);
-          setPattern((prev) => (prev ? { ...prev, activity: nextActivity } : prev));
+        if (!project.activity.includes(today)) {
+          const nextActivity = [...project.activity, today];
+          await supabase.from('projects').update({ activity: nextActivity }).eq('id', id);
+          setProject((prev) => (prev ? { ...prev, activity: nextActivity } : prev));
         }
       }
       setSections((prev) =>
@@ -122,7 +135,7 @@ export default function PatternPage() {
         ),
       );
     },
-    [id, pattern],
+    [id, project],
   );
 
   const handleEditRow = useCallback(
@@ -265,7 +278,7 @@ export default function PatternPage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('sections')
-        .insert({ pattern_id: id, position: sections.length, name })
+        .insert({ project_id: id, position: sections.length, name })
         .select('*')
         .single();
       if (error) { setToast({ message: error.message, variant: 'error' }); return; }
@@ -285,13 +298,13 @@ export default function PatternPage() {
     );
   }
 
-  if (!pattern) {
+  if (!project) {
     return (
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center flex-col gap-3">
-          <p className="text-text-secondary">Pattern not found.</p>
-          <Link href="/patterns" className="text-sm text-teal hover:underline">Back to patterns</Link>
+          <p className="text-text-secondary">Project not found.</p>
+          <Link href="/projects" className="text-sm text-teal hover:underline">Back to projects</Link>
         </div>
       </div>
     );
@@ -304,16 +317,45 @@ export default function PatternPage() {
       <div className="flex-1 flex flex-col pb-16 md:pb-0 min-w-0">
         <header className="sticky top-0 z-10 bg-bg/90 backdrop-blur-sm border-b border-black/[0.09] px-6 py-3 flex items-center gap-4">
           <Link
-            href="/patterns"
+            href="/projects"
             className="text-text-tertiary hover:text-text-secondary transition-colors shrink-0"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M11 4L6 9l5 5" />
             </svg>
           </Link>
-          <h2 className="font-serif text-lg font-semibold text-text-primary truncate flex-1">
-            {pattern.name}
-          </h2>
+
+          <div className="flex-1 flex items-center gap-2 min-w-0 group/title">
+            {isRenaming ? (
+              <input
+                autoFocus
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onBlur={submitRename}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') submitRename();
+                  if (e.key === 'Escape') setIsRenaming(false);
+                }}
+                className="font-serif text-lg font-semibold text-text-primary bg-transparent border-b border-teal focus:outline-none min-w-0 flex-1"
+              />
+            ) : (
+              <>
+                <h2 className="font-serif text-lg font-semibold text-text-primary truncate">
+                  {project.name}
+                </h2>
+                <button
+                  onClick={() => { setIsRenaming(true); setRenameValue(project.name); }}
+                  className="opacity-0 group-hover/title:opacity-100 transition-opacity shrink-0 text-text-tertiary hover:text-text-secondary"
+                  title="Rename project"
+                >
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M11.5 2.5a2.12 2.12 0 0 1 3 3L5 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+
           <button
             onClick={() => setEditMode((v) => !v)}
             className={`px-3 py-1.5 text-xs font-medium rounded-sm border transition-colors shrink-0 ${
@@ -327,12 +369,12 @@ export default function PatternPage() {
         </header>
 
         {/* Cover banner */}
-        {(pattern.cover_url || editMode) && (
+        {(project.cover_url || editMode) && (
           <div className="relative w-full h-44 shrink-0 border-b border-black/[0.09] overflow-hidden">
-            {pattern.cover_url ? (
+            {project.cover_url ? (
               <Image
-                src={pattern.cover_url}
-                alt={pattern.name}
+                src={project.cover_url}
+                alt={project.name}
                 fill
                 className="object-cover"
                 sizes="100vw"
@@ -344,7 +386,7 @@ export default function PatternPage() {
             {editMode && (
               <div className="absolute bottom-3 right-4 flex gap-2">
                 <label className={`px-3 py-1.5 text-xs font-medium bg-white/90 backdrop-blur-sm border border-black/[0.09] rounded-sm transition-colors ${coverUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-white'}`}>
-                  {coverUploading ? 'Uploading…' : pattern.cover_url ? 'Change cover' : '+ Add cover'}
+                  {coverUploading ? 'Uploading…' : project.cover_url ? 'Change cover' : '+ Add cover'}
                   <input
                     type="file"
                     accept="image/*"
@@ -353,7 +395,7 @@ export default function PatternPage() {
                     disabled={coverUploading}
                   />
                 </label>
-                {pattern.cover_url && (
+                {project.cover_url && (
                   <button
                     onClick={handleRemoveCover}
                     className="px-3 py-1.5 text-xs font-medium bg-white/90 backdrop-blur-sm border border-black/[0.09] rounded-sm hover:bg-white hover:text-coral transition-colors"

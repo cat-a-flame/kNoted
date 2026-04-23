@@ -158,7 +158,7 @@ export function SectionList({
 
   const submitAddRow = async (sectionId: string, rowCount: number) => {
     await onAddRow(sectionId, {
-      title: rowTitle.trim() || `Row ${rowCount + 1}`,
+      title: rowTitle.trim() || `Row ${rowCount}`,
       stitches: rowStitches,
       note: rowNote.trim() || null,
     });
@@ -290,7 +290,7 @@ export function SectionList({
                         autoFocus
                         value={rowTitle}
                         onChange={(e) => setRowTitle(e.target.value)}
-                        placeholder={`Row ${rows.length + 1}`}
+                        placeholder={`Row ${rows.length}`}
                         className="w-full border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
                       />
                       <StitchBuilder stitches={rowStitches} onChange={setRowStitches} />

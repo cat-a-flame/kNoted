@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Pattern } from '@/lib/types';
+import { Project } from '@/lib/types';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { ContextMenu } from './ContextMenu';
 
-interface PatternCardProps {
-  pattern: Pattern & { rows?: { done: boolean }[] };
+interface ProjectCardProps {
+  project: Project & { rows?: { done: boolean }[] };
   onArchive: () => void;
   onDelete: () => void;
 }
@@ -27,21 +27,21 @@ function CoverPlaceholder() {
   );
 }
 
-export function PatternCard({ pattern, onArchive, onDelete }: PatternCardProps) {
-  const rows = pattern.rows ?? [];
+export function ProjectCard({ project, onArchive, onDelete }: ProjectCardProps) {
+  const rows = project.rows ?? [];
   const done = rows.filter((r) => r.done).length;
   const total = rows.length;
   const allDone = total > 0 && done === total;
 
-  const badgeVariant = pattern.archived ? 'archived' : allDone ? 'done' : 'inProgress';
+  const badgeVariant = project.archived ? 'archived' : allDone ? 'done' : 'inProgress';
 
   return (
     <div className="bg-surface border border-black/[0.09] rounded-lg overflow-hidden hover:border-black/[0.17] transition-colors group">
-      <Link href={`/patterns/${pattern.id}`} className="block relative w-full h-32">
-        {pattern.cover_url ? (
+      <Link href={`/projects/${project.id}`} className="block relative w-full h-32">
+        {project.cover_url ? (
           <Image
-            src={pattern.cover_url}
-            alt={pattern.name}
+            src={project.cover_url}
+            alt={project.name}
             fill
             className="object-cover"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -53,9 +53,9 @@ export function PatternCard({ pattern, onArchive, onDelete }: PatternCardProps) 
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <Link href={`/patterns/${pattern.id}`} className="flex-1 min-w-0">
+          <Link href={`/projects/${project.id}`} className="flex-1 min-w-0">
             <h3 className="font-serif text-base font-semibold text-text-primary truncate leading-snug">
-              {pattern.name}
+              {project.name}
             </h3>
             <p className="text-xs text-text-secondary mt-0.5">
               {done} / {total} rows
@@ -66,7 +66,7 @@ export function PatternCard({ pattern, onArchive, onDelete }: PatternCardProps) 
             <ContextMenu
               items={[
                 {
-                  label: pattern.archived ? 'Unarchive' : 'Archive',
+                  label: project.archived ? 'Unarchive' : 'Archive',
                   onClick: onArchive,
                 },
                 {
