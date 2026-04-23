@@ -191,7 +191,7 @@ export default function NewPatternPage() {
                         { field: 'yarn_weight' as const, label: 'Yarn weight', placeholder: 'e.g. DK', list: 'np-yarn-weights' },
                         { field: 'yarn_colour' as const, label: 'Colour', placeholder: 'e.g. Forest Green' },
                         { field: 'hook_size' as const, label: 'Hook size', placeholder: 'e.g. 5mm', list: 'np-hook-sizes' },
-                      ] as const).map(({ field, label, placeholder, list }) => (
+                      ] as { field: 'yarn_name' | 'yarn_weight' | 'yarn_colour' | 'hook_size'; label: string; placeholder: string; list?: string }[]).map(({ field, label, placeholder, list }) => (
                         <div key={field}>
                           <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
                           <input
