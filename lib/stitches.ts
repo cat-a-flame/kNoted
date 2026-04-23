@@ -13,11 +13,11 @@ export const STITCHES: StitchDef[] = [
     desc: 'Körös kezdés: fonalból hurkot képzel, és közvetlenül abba horgolsz, majd összehúzod.',
   },
   {
-    name: 'Rövid pálca',
+    name: 'Rövidpálca',
     desc: 'A legalacsonyabb öltés. Beakasztás, hurok felhúzása, majd mindkét hurkon áthúzás egyszerre.',
   },
   {
-    name: 'Fél magas pálca',
+    name: 'Félpálca',
     desc: 'A rövidpálca és a magaspálca között. Átvetés, beakasztás, hurok felhúzása, majd mind a 3 hurkon áthúzás egyszerre.',
   },
   {
@@ -29,11 +29,11 @@ export const STITCHES: StitchDef[] = [
     desc: 'Beakasztás előtt kétszer átvetsz. Magasabb a magaspálcánál — csipkés mintákhoz remek.',
   },
   {
-    name: 'Növelés',
+    name: 'Szaporítás',
     desc: 'Ugyanabba az öltésbe 2 (vagy több) öltést dolgozol — növeli az öltésszámot.',
   },
   {
-    name: 'Csökkentés',
+    name: 'Fogyasztás',
     desc: 'Két szomszédos öltést egybe fogsz össze — csökkenti az öltésszámot (amigurumiban gyakori).',
   },
   {
@@ -53,7 +53,11 @@ export const STITCHES: StitchDef[] = [
     desc: 'A sor végén láncszemek a következő sor magasságának megfelelően. 1 rövidpálcához, 2 félmagashoz, 3 magaspálcához.',
   },
   {
-    name: 'Csúszóöltés',
-    desc: 'Kötőöltés — nem emelkedik. Körök zárásához vagy új pozícióba lépéshez használják.',
+    name: 'Kúszószem',
+    desc: 'Hamispálca — Körök zárásához vagy új pozícióba lépéshez használják.',
   },
+    {
+    name: 'Emelés',
+    desc: 'Egy láncszemnyi emelés',
+  }
 ];
