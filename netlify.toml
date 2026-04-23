@@ -3,4 +3,5 @@
   publish = ".next"
 
 [[plugins]]
-  package = "@netlify/next"
+  package = "@netlify/plugin-nextjs"
+  inputs = {}
