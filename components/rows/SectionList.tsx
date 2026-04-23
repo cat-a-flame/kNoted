@@ -1,0 +1,308 @@
+'use client';
+
+import { useState, useCallback } from 'react';
+import { Section, Row, Stitch } from '@/lib/types';
+import { RowList } from './RowList';
+import { StitchBuilder } from './StitchBuilder';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+
+interface SectionListProps {
+  sections: Section[];
+  editMode: boolean;
+  firstIncompleteRowId: string | null;
+  onToggleRow: (sectionId: string, rowId: string, done: boolean) => Promise<void>;
+  onEditRow: (sectionId: string, rowId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
+  onDuplicateRow: (sectionId: string, rowId: string) => Promise<void>;
+  onDeleteRow: (sectionId: string, rowId: string) => Promise<void>;
+  onReorderRows: (sectionId: string, rows: Row[]) => Promise<void>;
+  onAddRow: (sectionId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
+  onRenameSection: (sectionId: string, name: string) => Promise<void>;
+  onDeleteSection: (sectionId: string) => Promise<void>;
+  onAddSection: (name: string) => Promise<void>;
+}
+
+export function SectionList({
+  sections,
+  editMode,
+  firstIncompleteRowId,
+  onToggleRow,
+  onEditRow,
+  onDuplicateRow,
+  onDeleteRow,
+  onReorderRows,
+  onAddRow,
+  onRenameSection,
+  onDeleteSection,
+  onAddSection,
+}: SectionListProps) {
+  const showHeaders = sections.length > 1;
+
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
+  const [addingRowTo, setAddingRowTo] = useState<string | null>(null);
+  const [rowTitle, setRowTitle] = useState('');
+  const [rowStitches, setRowStitches] = useState<Stitch[]>([]);
+  const [rowNote, setRowNote] = useState('');
+
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null);
+
+  const [showAddSection, setShowAddSection] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
+  const [addingSectionLoading, setAddingSectionLoading] = useState(false);
+
+  const toggleCollapse = (id: string) => {
+    setCollapsedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const startRename = (section: Section) => {
+    setRenamingId(section.id);
+    setRenameValue(section.name);
+  };
+
+  const submitRename = useCallback(
+    async (sectionId: string) => {
+      const trimmed = renameValue.trim();
+      if (trimmed) await onRenameSection(sectionId, trimmed);
+      setRenamingId(null);
+      setRenameValue('');
+    },
+    [renameValue, onRenameSection],
+  );
+
+  const openAddRow = (sectionId: string) => {
+    setAddingRowTo(sectionId);
+    setRowTitle('');
+    setRowStitches([]);
+    setRowNote('');
+  };
+
+  const submitAddRow = async (sectionId: string, rowCount: number) => {
+    await onAddRow(sectionId, {
+      title: rowTitle.trim() || `Row ${rowCount + 1}`,
+      stitches: rowStitches,
+      note: rowNote.trim() || null,
+    });
+    setAddingRowTo(null);
+    setRowTitle('');
+    setRowStitches([]);
+    setRowNote('');
+  };
+
+  const submitAddSection = async () => {
+    const trimmed = newSectionName.trim();
+    if (!trimmed) return;
+    setAddingSectionLoading(true);
+    await onAddSection(trimmed);
+    setAddingSectionLoading(false);
+    setShowAddSection(false);
+    setNewSectionName('');
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      {sections.map((section) => {
+        const rows = section.rows ?? [];
+        const doneCnt = rows.filter((r) => r.done).length;
+        const allDone = rows.length > 0 && doneCnt === rows.length;
+        const isCollapsed = collapsedIds.has(section.id);
+
+        return (
+          <div key={section.id}>
+            {showHeaders && (
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <button
+                  onClick={() => toggleCollapse(section.id)}
+                  className="text-text-tertiary hover:text-text-secondary transition-colors shrink-0"
+                  aria-label={isCollapsed ? 'Expand section' : 'Collapse section'}
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    className={`transition-transform duration-150 ${isCollapsed ? '-rotate-90' : ''}`}
+                  >
+                    <path d="M2 5l5 5 5-5" />
+                  </svg>
+                </button>
+
+                {renamingId === section.id ? (
+                  <input
+                    autoFocus
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={() => submitRename(section.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') submitRename(section.id);
+                      if (e.key === 'Escape') { setRenamingId(null); setRenameValue(''); }
+                    }}
+                    className="flex-1 text-sm font-semibold text-text-primary bg-transparent border-b border-teal focus:outline-none"
+                  />
+                ) : (
+                  <span className="text-sm font-semibold text-text-primary">{section.name}</span>
+                )}
+
+                <span className="text-xs text-text-secondary">{doneCnt} / {rows.length}</span>
+
+                {allDone && (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-teal shrink-0"
+                  >
+                    <path d="M3 8l3.5 3.5L13 4.5" />
+                  </svg>
+                )}
+
+                {editMode && renamingId !== section.id && (
+                  <div className="flex items-center gap-1 ml-auto">
+                    <button
+                      onClick={() => startRename(section)}
+                      title="Rename section"
+                      className="w-6 h-6 flex items-center justify-center rounded text-text-tertiary hover:bg-surface-2 hover:text-text-secondary transition-colors"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M11.5 2.5a2.12 2.12 0 0 1 3 3L5 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setDeletingSectionId(section.id)}
+                      title="Delete section"
+                      className="w-6 h-6 flex items-center justify-center rounded text-text-tertiary hover:bg-coral-light hover:text-coral transition-colors"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8l1-10" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!isCollapsed && (
+              <>
+                {rows.length > 0 && (
+                  <RowList
+                    rows={rows}
+                    editMode={editMode}
+                    firstIncompleteRowId={firstIncompleteRowId}
+                    onToggle={(rowId, done) => onToggleRow(section.id, rowId, done)}
+                    onEdit={(rowId, data) => onEditRow(section.id, rowId, data)}
+                    onDuplicate={(rowId) => onDuplicateRow(section.id, rowId)}
+                    onDelete={(rowId) => onDeleteRow(section.id, rowId)}
+                    onReorder={(reordered) => onReorderRows(section.id, reordered)}
+                  />
+                )}
+
+                {editMode && (
+                  addingRowTo === section.id ? (
+                    <div className="mt-2 bg-surface-2 rounded-md border border-black/[0.09] p-3 flex flex-col gap-2">
+                      <input
+                        autoFocus
+                        value={rowTitle}
+                        onChange={(e) => setRowTitle(e.target.value)}
+                        placeholder={`Row ${rows.length + 1}`}
+                        className="w-full border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+                      />
+                      <StitchBuilder stitches={rowStitches} onChange={setRowStitches} />
+                      <input
+                        value={rowNote}
+                        onChange={(e) => setRowNote(e.target.value)}
+                        placeholder="Note (optional)"
+                        className="w-full border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => submitAddRow(section.id, rows.length)}
+                          className="px-3 py-1.5 text-xs font-medium bg-teal text-white rounded-sm hover:bg-teal-dark transition-colors"
+                        >
+                          Add row
+                        </button>
+                        <button
+                          onClick={() => setAddingRowTo(null)}
+                          className="px-3 py-1.5 text-xs font-medium border border-black/[0.09] text-text-secondary rounded-sm hover:bg-surface-3 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => openAddRow(section.id)}
+                      className="mt-2 w-full py-2 text-xs font-medium text-text-secondary border border-dashed border-black/[0.17] rounded-md hover:border-teal hover:text-teal transition-colors"
+                    >
+                      + Add row
+                    </button>
+                  )
+                )}
+              </>
+            )}
+          </div>
+        );
+      })}
+
+      {editMode && (
+        showAddSection ? (
+          <div className="bg-surface-2 rounded-md border border-black/[0.09] p-3 flex gap-2">
+            <input
+              autoFocus
+              value={newSectionName}
+              onChange={(e) => setNewSectionName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && submitAddSection()}
+              placeholder="Section name"
+              className="flex-1 border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+            />
+            <button
+              onClick={submitAddSection}
+              disabled={addingSectionLoading}
+              className="px-3 py-1.5 text-xs font-medium bg-teal text-white rounded-sm hover:bg-teal-dark transition-colors disabled:opacity-60"
+            >
+              Add
+            </button>
+            <button
+              onClick={() => { setShowAddSection(false); setNewSectionName(''); }}
+              className="px-3 py-1.5 text-xs font-medium border border-black/[0.09] text-text-secondary rounded-sm hover:bg-surface-3 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAddSection(true)}
+            className="w-full py-2.5 text-sm font-medium text-text-secondary border border-dashed border-black/[0.17] rounded-md hover:border-teal hover:text-teal transition-colors"
+          >
+            + Add section
+          </button>
+        )
+      )}
+
+      {deletingSectionId && (
+        <ConfirmDialog
+          title="Delete section"
+          description="This will permanently delete the section and all its rows. This cannot be undone."
+          onConfirm={async () => {
+            await onDeleteSection(deletingSectionId);
+            setDeletingSectionId(null);
+          }}
+          onCancel={() => setDeletingSectionId(null)}
+        />
+      )}
+    </div>
+  );
+}

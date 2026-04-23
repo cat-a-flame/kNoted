@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Pattern, Row } from '@/lib/types';
+import { Pattern } from '@/lib/types';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
-type PatternWithRows = Pattern & { rows: Pick<Row, 'done'>[] };
+type PatternWithRows = Pattern & { rows: { done: boolean }[] };
 
 function buildHeatmap(patterns: PatternWithRows[]): Map<string, number> {
   const map = new Map<string, number>();
@@ -64,15 +64,27 @@ export default function StatsPage() {
       if (!patternData) { setLoading(false); return; }
 
       const ids = patternData.map((p) => p.id);
-      const { data: rowData } = ids.length
-        ? await supabase.from('rows').select('id, pattern_id, done').in('pattern_id', ids)
+
+      const { data: sectionData } = ids.length
+        ? await supabase.from('sections').select('id, pattern_id').in('pattern_id', ids)
+        : { data: [] };
+
+      const sectionIds = (sectionData ?? []).map((s: { id: string }) => s.id);
+      const sectionToPattern = new Map<string, string>(
+        (sectionData ?? []).map((s: { id: string; pattern_id: string }) => [s.id, s.pattern_id]),
+      );
+
+      const { data: rowData } = sectionIds.length
+        ? await supabase.from('rows').select('section_id, done').in('section_id', sectionIds)
         : { data: [] };
 
       const rowsByPattern = new Map<string, { done: boolean }[]>();
-      (rowData ?? []).forEach((r) => {
-        const arr = rowsByPattern.get(r.pattern_id) ?? [];
+      (rowData ?? []).forEach((r: { section_id: string; done: boolean }) => {
+        const patternId = sectionToPattern.get(r.section_id);
+        if (!patternId) return;
+        const arr = rowsByPattern.get(patternId) ?? [];
         arr.push({ done: r.done });
-        rowsByPattern.set(r.pattern_id, arr);
+        rowsByPattern.set(patternId, arr);
       });
 
       setPatterns(

@@ -3,15 +3,22 @@ export type Stitch = {
   count: number;
 };
 
-export type Row = {
+export type Section = {
   id: string;
   pattern_id: string;
+  position: number;
+  name: string;
+  rows?: Row[];
+};
+
+export type Row = {
+  id: string;
+  section_id: string;
   position: number;
   title: string;
   stitches: Stitch[];
   note: string | null;
   done: boolean;
-  section: string | null;
 };
 
 export type Pattern = {
@@ -21,5 +28,5 @@ export type Pattern = {
   archived: boolean;
   activity: string[];
   created_at: string;
-  rows?: Row[];
+  sections?: Section[];
 };
