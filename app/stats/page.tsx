@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Pattern } from '@/lib/types';
+import { Project } from '@/lib/types';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
-type PatternWithRows = Pattern & { rows: { done: boolean }[] };
+type ProjectWithRows = Project & { rows: { done: boolean }[] };
 
-function buildHeatmap(patterns: PatternWithRows[]): Map<string, number> {
+function buildHeatmap(projects: ProjectWithRows[]): Map<string, number> {
   const map = new Map<string, number>();
-  patterns
+  projects
     .filter((p) => !p.archived)
     .forEach((p) => {
       p.activity.forEach((date) => {
@@ -50,47 +50,47 @@ function HeatmapCell({ count }: { count: number }) {
 }
 
 export default function StatsPage() {
-  const [patterns, setPatterns] = useState<PatternWithRows[]>([]);
+  const [projects, setProjects] = useState<ProjectWithRows[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
-      const { data: patternData } = await supabase
-        .from('patterns')
+      const { data: projectData } = await supabase
+        .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!patternData) { setLoading(false); return; }
+      if (!projectData) { setLoading(false); return; }
 
-      const ids = patternData.map((p) => p.id);
+      const ids = projectData.map((p) => p.id);
 
       const { data: sectionData } = ids.length
-        ? await supabase.from('sections').select('id, pattern_id').in('pattern_id', ids)
+        ? await supabase.from('sections').select('id, project_id').in('project_id', ids)
         : { data: [] };
 
       const sectionIds = (sectionData ?? []).map((s: { id: string }) => s.id);
-      const sectionToPattern = new Map<string, string>(
-        (sectionData ?? []).map((s: { id: string; pattern_id: string }) => [s.id, s.pattern_id]),
+      const sectionToProject = new Map<string, string>(
+        (sectionData ?? []).map((s: { id: string; project_id: string }) => [s.id, s.project_id]),
       );
 
       const { data: rowData } = sectionIds.length
         ? await supabase.from('rows').select('section_id, done').in('section_id', sectionIds)
         : { data: [] };
 
-      const rowsByPattern = new Map<string, { done: boolean }[]>();
+      const rowsByProject = new Map<string, { done: boolean }[]>();
       (rowData ?? []).forEach((r: { section_id: string; done: boolean }) => {
-        const patternId = sectionToPattern.get(r.section_id);
-        if (!patternId) return;
-        const arr = rowsByPattern.get(patternId) ?? [];
+        const projectId = sectionToProject.get(r.section_id);
+        if (!projectId) return;
+        const arr = rowsByProject.get(projectId) ?? [];
         arr.push({ done: r.done });
-        rowsByPattern.set(patternId, arr);
+        rowsByProject.set(projectId, arr);
       });
 
-      setPatterns(
-        patternData.map((p) => ({
+      setProjects(
+        projectData.map((p) => ({
           ...p,
-          rows: rowsByPattern.get(p.id) ?? [],
+          rows: rowsByProject.get(p.id) ?? [],
         })),
       );
       setLoading(false);
@@ -98,7 +98,7 @@ export default function StatsPage() {
     load();
   }, []);
 
-  const active = patterns.filter((p) => !p.archived);
+  const active = projects.filter((p) => !p.archived);
   const finished = active.filter((p) => p.rows.length > 0 && p.rows.every((r) => r.done));
   const totalRowsDone = active.reduce((sum, p) => sum + p.rows.filter((r) => r.done).length, 0);
   const avgProgress =
@@ -111,13 +111,13 @@ export default function StatsPage() {
           }, 0) / active.length,
         );
 
-  const heatmap = buildHeatmap(patterns);
+  const heatmap = buildHeatmap(projects);
   const days = last70Days();
 
   const metrics = [
-    { label: 'Finished patterns', value: finished.length },
+    { label: 'Finished projects', value: finished.length },
     { label: 'Rows completed', value: totalRowsDone },
-    { label: 'Active patterns', value: active.length },
+    { label: 'Active projects', value: active.length },
     { label: 'Avg progress', value: `${avgProgress}%` },
   ];
 
@@ -166,11 +166,11 @@ export default function StatsPage() {
                 </div>
               </div>
 
-              {/* Per-pattern progress */}
+              {/* Per-project progress */}
               {active.length > 0 && (
                 <div className="bg-surface border border-black/[0.09] rounded-lg p-5">
                   <h3 className="font-serif text-sm font-semibold text-text-primary mb-4">
-                    Pattern progress
+                    Project progress
                   </h3>
                   <div className="flex flex-col gap-4">
                     {active.map((p) => {

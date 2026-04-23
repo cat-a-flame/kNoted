@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 const navItems = [
-  { href: '/patterns', label: 'Patterns' },
+  { href: '/projects', label: 'Projects' },
   { href: '/stats', label: 'Statistics' },
 ];
 
@@ -26,7 +26,7 @@ export function Sidebar() {
       style={{ width: '244px', minWidth: '244px' }}
     >
       <div className="px-5 pt-6 pb-4 border-b border-black/[0.09]">
-        <Link href="/patterns">
+        <Link href="/projects">
           <h1 className="font-serif text-2xl font-bold text-text-primary">kNoted</h1>
         </Link>
         <p className="text-xs text-text-tertiary mt-0.5">Crochet notebook</p>

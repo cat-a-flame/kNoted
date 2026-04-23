@@ -33,7 +33,7 @@ type DraftSection = {
 let _id = 0;
 const genId = () => String(++_id);
 
-export default function NewPatternPage() {
+export default function NewProjectPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -86,7 +86,7 @@ export default function NewPatternPage() {
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     const trimmedName = name.trim();
-    if (!trimmedName) { setError('Pattern name is required.'); return; }
+    if (!trimmedName) { setError('Project name is required.'); return; }
     if (sections.length === 0) { setError('Add at least one section.'); return; }
     setError(null);
     setSaving(true);
@@ -96,19 +96,19 @@ export default function NewPatternPage() {
     const userId = user.user?.id;
     if (!userId) { setError('Not authenticated.'); setSaving(false); return; }
 
-    const { data: pattern, error: patternError } = await supabase
-      .from('patterns')
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
       .insert({ user_id: userId, name: trimmedName })
       .select('*')
       .single();
-    if (patternError) { setError(patternError.message); setSaving(false); return; }
+    if (projectError) { setError(projectError.message); setSaving(false); return; }
 
     for (let si = 0; si < sections.length; si++) {
       const sec = sections[si];
       const { data: sectionData, error: sectionError } = await supabase
         .from('sections')
         .insert({
-          pattern_id: pattern.id,
+          project_id: project.id,
           position: si,
           name: sec.name,
           yarn_name: sec.yarn_name || null,
@@ -135,7 +135,7 @@ export default function NewPatternPage() {
       }
     }
 
-    router.push(`/patterns/${pattern.id}`);
+    router.push(`/projects/${project.id}`);
   };
 
   return (
@@ -144,19 +144,19 @@ export default function NewPatternPage() {
 
       <div className="flex-1 flex flex-col pb-16 md:pb-0">
         <header className="sticky top-0 z-10 bg-bg/90 backdrop-blur-sm border-b border-black/[0.09] px-6 py-3 flex items-center gap-4">
-          <Link href="/patterns" className="text-text-tertiary hover:text-text-secondary transition-colors shrink-0">
+          <Link href="/projects" className="text-text-tertiary hover:text-text-secondary transition-colors shrink-0">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M11 4L6 9l5 5" />
             </svg>
           </Link>
-          <h2 className="font-serif text-lg font-semibold text-text-primary">New pattern</h2>
+          <h2 className="font-serif text-lg font-semibold text-text-primary">New project</h2>
         </header>
 
         <main className="px-6 py-5 max-w-2xl w-full">
           <form onSubmit={handleSave} className="flex flex-col gap-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-1.5">
-                Pattern name
+                Project name
               </label>
               <input
                 id="name"
@@ -184,7 +184,6 @@ export default function NewPatternPage() {
                       </button>
                     </div>
 
-                    {/* Section details */}
                     <div className="grid grid-cols-2 gap-x-3 gap-y-2 mb-4">
                       {([
                         { field: 'yarn_name' as const, label: 'Yarn name', placeholder: 'e.g. Lion Brand' },
@@ -291,20 +290,8 @@ export default function NewPatternPage() {
                       placeholder="Section name (e.g. Stem, Cap…)"
                       className="flex-1 border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
                     />
-                    <button
-                      type="button"
-                      onClick={addSection}
-                      className="px-3 py-1.5 text-sm font-medium bg-teal text-white rounded-sm hover:bg-teal-dark transition-colors"
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setShowAddSection(false); setAddingSectionName(''); }}
-                      className="px-3 py-1.5 text-sm font-medium border border-black/[0.09] text-text-secondary rounded-sm hover:bg-surface-2 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                    <button type="button" onClick={addSection} className="px-3 py-1.5 text-sm font-medium bg-teal text-white rounded-sm hover:bg-teal-dark transition-colors">Add</button>
+                    <button type="button" onClick={() => { setShowAddSection(false); setAddingSectionName(''); }} className="px-3 py-1.5 text-sm font-medium border border-black/[0.09] text-text-secondary rounded-sm hover:bg-surface-2 transition-colors">Cancel</button>
                   </div>
                 ) : (
                   <button
@@ -324,7 +311,7 @@ export default function NewPatternPage() {
                 disabled={saving}
                 className="px-6 py-2.5 text-sm font-medium bg-teal text-white rounded-sm hover:bg-teal-dark transition-colors disabled:opacity-60"
               >
-                {saving ? 'Saving…' : 'Save pattern'}
+                {saving ? 'Saving…' : 'Save project'}
               </button>
             </div>
           </form>
