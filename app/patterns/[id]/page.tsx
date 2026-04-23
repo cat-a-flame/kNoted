@@ -86,6 +86,7 @@ export default function PatternPage() {
       const url = `${data.publicUrl}?v=${Date.now()}`;
       await supabase.from('patterns').update({ cover_url: data.publicUrl }).eq('id', id);
       setPattern((prev) => (prev ? { ...prev, cover_url: url } : prev));
+      setToast({ message: 'Cover image saved.', variant: 'success' });
       setCoverUploading(false);
       e.target.value = '';
     },
@@ -96,6 +97,7 @@ export default function PatternPage() {
     const supabase = createClient();
     await supabase.from('patterns').update({ cover_url: null }).eq('id', id);
     setPattern((prev) => (prev ? { ...prev, cover_url: null } : prev));
+    setToast({ message: 'Cover image removed.', variant: 'success' });
   }, [id]);
 
   const handleToggleRow = useCallback(
@@ -135,6 +137,7 @@ export default function PatternPage() {
             : s,
         ),
       );
+      setToast({ message: 'Row saved.', variant: 'success' });
     },
     [],
   );
@@ -191,6 +194,7 @@ export default function PatternPage() {
           s.id === sectionId ? { ...s, rows: (s.rows ?? []).filter((r) => r.id !== rowId) } : s,
         ),
       );
+      setToast({ message: 'Row deleted.', variant: 'success' });
     },
     [],
   );
@@ -251,6 +255,7 @@ export default function PatternPage() {
       const { error } = await supabase.from('sections').delete().eq('id', sectionId);
       if (error) { setToast({ message: error.message, variant: 'error' }); return; }
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
+      setToast({ message: 'Section deleted.', variant: 'success' });
     },
     [],
   );

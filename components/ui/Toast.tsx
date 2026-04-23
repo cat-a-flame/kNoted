@@ -23,9 +23,9 @@ export function Toast({ message, variant = 'success', onDismiss, duration = 3000
   }, [onDismiss, duration]);
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-2">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2">
       <div
-        className={`flex items-center gap-3 px-4 py-3 rounded-md shadow-lg text-sm font-medium max-w-xs ${variantClasses[variant]}`}
+        className={`flex items-center gap-3 px-4 py-3 rounded-md shadow-lg text-sm font-medium whitespace-nowrap ${variantClasses[variant]}`}
       >
         <span>{message}</span>
         <button
