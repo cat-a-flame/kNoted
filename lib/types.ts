@@ -8,6 +8,10 @@ export type Section = {
   pattern_id: string;
   position: number;
   name: string;
+  yarn_name: string | null;
+  yarn_weight: string | null;
+  yarn_colour: string | null;
+  hook_size: string | null;
   rows?: Row[];
 };
 

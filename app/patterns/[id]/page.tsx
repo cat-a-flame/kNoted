@@ -191,12 +191,12 @@ export default function PatternPage() {
     [sections],
   );
 
-  const handleRenameSection = useCallback(
-    async (sectionId: string, name: string) => {
+  const handleUpdateSection = useCallback(
+    async (sectionId: string, updates: { name?: string; yarn_name?: string | null; yarn_weight?: string | null; yarn_colour?: string | null; hook_size?: string | null }) => {
       const supabase = createClient();
-      const { error } = await supabase.from('sections').update({ name }).eq('id', sectionId);
+      const { error } = await supabase.from('sections').update(updates).eq('id', sectionId);
       if (error) { setToast({ message: error.message, variant: 'error' }); return; }
-      setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, name } : s)));
+      setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, ...updates } : s)));
     },
     [],
   );
@@ -295,7 +295,7 @@ export default function PatternPage() {
                 onDeleteRow={handleDeleteRow}
                 onReorderRows={handleReorderRows}
                 onAddRow={handleAddRow}
-                onRenameSection={handleRenameSection}
+                onUpdateSection={handleUpdateSection}
                 onDeleteSection={handleDeleteSection}
                 onAddSection={handleAddSection}
               />

@@ -20,6 +20,10 @@ type DraftRow = {
 type DraftSection = {
   id: string;
   name: string;
+  yarn_name: string;
+  yarn_weight: string;
+  yarn_colour: string;
+  hook_size: string;
   rows: DraftRow[];
   builderTitle: string;
   builderStitches: Stitch[];
@@ -47,7 +51,7 @@ export default function NewPatternPage() {
     if (!trimmed) return;
     setSections((prev) => [
       ...prev,
-      { id: genId(), name: trimmed, rows: [], builderTitle: '', builderStitches: [], builderNote: '' },
+      { id: genId(), name: trimmed, yarn_name: '', yarn_weight: '', yarn_colour: '', hook_size: '', rows: [], builderTitle: '', builderStitches: [], builderNote: '' },
     ]);
     setAddingSectionName('');
     setShowAddSection(false);
@@ -103,7 +107,15 @@ export default function NewPatternPage() {
       const sec = sections[si];
       const { data: sectionData, error: sectionError } = await supabase
         .from('sections')
-        .insert({ pattern_id: pattern.id, position: si, name: sec.name })
+        .insert({
+          pattern_id: pattern.id,
+          position: si,
+          name: sec.name,
+          yarn_name: sec.yarn_name || null,
+          yarn_weight: sec.yarn_weight || null,
+          yarn_colour: sec.yarn_colour || null,
+          hook_size: sec.hook_size || null,
+        })
         .select('*')
         .single();
       if (sectionError) { setToast({ message: sectionError.message, variant: 'error' }); setSaving(false); return; }
@@ -170,6 +182,33 @@ export default function NewPatternPage() {
                       >
                         Remove section
                       </button>
+                    </div>
+
+                    {/* Section details */}
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-2 mb-4">
+                      {([
+                        { field: 'yarn_name' as const, label: 'Yarn name', placeholder: 'e.g. Lion Brand' },
+                        { field: 'yarn_weight' as const, label: 'Yarn weight', placeholder: 'e.g. DK', list: 'np-yarn-weights' },
+                        { field: 'yarn_colour' as const, label: 'Colour', placeholder: 'e.g. Forest Green' },
+                        { field: 'hook_size' as const, label: 'Hook size', placeholder: 'e.g. 5mm', list: 'np-hook-sizes' },
+                      ] as const).map(({ field, label, placeholder, list }) => (
+                        <div key={field}>
+                          <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
+                          <input
+                            value={section[field]}
+                            onChange={(e) => updateSection(section.id, { [field]: e.target.value })}
+                            placeholder={placeholder}
+                            list={list}
+                            className="w-full border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+                          />
+                        </div>
+                      ))}
+                      <datalist id="np-yarn-weights">
+                        {['Lace', 'Fingering', 'Sport', 'DK', 'Worsted', 'Aran', 'Bulky', 'Super Bulky'].map((w) => <option key={w} value={w} />)}
+                      </datalist>
+                      <datalist id="np-hook-sizes">
+                        {['2mm', '2.5mm', '3mm', '3.25mm', '3.5mm', '3.75mm', '4mm', '4.5mm', '5mm', '5.5mm', '6mm', '6.5mm', '7mm', '8mm', '9mm', '10mm', '12mm', '15mm'].map((s) => <option key={s} value={s} />)}
+                      </datalist>
                     </div>
 
                     <div className="flex flex-col gap-2 mb-3">
