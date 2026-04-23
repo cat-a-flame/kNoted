@@ -5,55 +5,55 @@ export type StitchDef = {
 
 export const STITCHES: StitchDef[] = [
   {
-    name: 'Chain st.',
-    desc: 'The foundation of everything. Simple loop pulled through — used for foundation chains and turning chains.',
+    name: 'Láncszem',
+    desc: 'Minden alap. Egyszerű hurok áthúzva — alaplánchoz és fordulólánchoz használják.',
   },
   {
-    name: 'Magic ring',
-    desc: 'A circular start: you form a yarn loop and crochet directly into it, then pull tight.',
+    name: 'Varázsgyűrű',
+    desc: 'Körös kezdés: fonalból hurkot képzel, és közvetlenül abba horgolsz, majd összehúzod.',
   },
   {
-    name: 'Single crochet',
-    desc: 'The shortest stitch. Insert hook, pull up a loop, then draw through both loops at once.',
+    name: 'Rövid pálca',
+    desc: 'A legalacsonyabb öltés. Beakasztás, hurok felhúzása, majd mindkét hurkon áthúzás egyszerre.',
   },
   {
-    name: 'Half double cr.',
-    desc: 'Between sc and dc. Yarn over, insert, pull up loop, then draw through all 3 loops at once.',
+    name: 'Fél magas pálca',
+    desc: 'A rövidpálca és a magaspálca között. Átvetés, beakasztás, hurok felhúzása, majd mind a 3 hurkon áthúzás egyszerre.',
   },
   {
-    name: 'Double crochet',
-    desc: 'The standard stitch. Yarn over, insert, pull up loop, then work off 2 loops twice (2 steps).',
+    name: 'Magas pálca',
+    desc: 'Az alap öltés. Átvetés, beakasztás, hurok felhúzása, majd 2-2 hurkon áthúzás kétszer (2 lépés).',
   },
   {
-    name: 'Treble crochet',
-    desc: 'Yarn over twice before inserting. Taller than dc — great for lacy patterns.',
+    name: 'Hármas pálca',
+    desc: 'Beakasztás előtt kétszer átvetsz. Magasabb a magaspálcánál — csipkés mintákhoz remek.',
   },
   {
-    name: 'Increase',
-    desc: 'Work 2 (or more) stitches into the same stitch — adds stitches to increase count.',
+    name: 'Növelés',
+    desc: 'Ugyanabba az öltésbe 2 (vagy több) öltést dolgozol — növeli az öltésszámot.',
   },
   {
-    name: 'Decrease',
-    desc: 'Join 2 adjacent stitches into one — reduces stitch count (common in amigurumi shaping).',
+    name: 'Csökkentés',
+    desc: 'Két szomszédos öltést egybe fogsz össze — csökkenti az öltésszámot (amigurumiban gyakori).',
   },
   {
-    name: 'Crab stitch',
-    desc: 'Single crochet worked backwards (right to left). Creates a firm, twisted decorative border.',
+    name: 'Ráköltés',
+    desc: 'Visszafelé (jobbról balra) dolgozott rövid pálca. Szép, szilárd, csavart szegélyt ad.',
   },
   {
-    name: 'Popcorn st.',
-    desc: 'Work 5 dc into one stitch, then close together — creates a raised, bobble-like bump.',
+    name: 'Popcorn öltés',
+    desc: 'Egy öltésbe 5 magaspálcát dolgozol, majd összefogod — domború, buborékszerű mintát ad.',
   },
   {
-    name: 'Leaf stitch',
-    desc: 'An oval leaf motif, typically built from 5-7 double crochets.',
+    name: 'Levél öltés',
+    desc: 'Ovális levél motívum, általában 5-7 magaspálcából felépítve.',
   },
   {
-    name: 'Turning chain',
-    desc: 'Chain(s) at end of row to match next row height. 1 for sc, 2 for hdc, 3 for dc.',
+    name: 'Fordulólánc',
+    desc: 'A sor végén láncszemek a következő sor magasságának megfelelően. 1 rövidpálcához, 2 félmagashoz, 3 magaspálcához.',
   },
   {
-    name: 'Slip stitch',
-    desc: 'Joining stitch — no height. Used to close rounds or move to a new position.',
+    name: 'Csúszóöltés',
+    desc: 'Kötőöltés — nem emelkedik. Körök zárásához vagy új pozícióba lépéshez használják.',
   },
 ];
