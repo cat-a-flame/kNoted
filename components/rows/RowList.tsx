@@ -9,7 +9,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 interface RowListProps {
   rows: Row[];
   editMode: boolean;
-  firstIncompleteIndex: number;
+  firstIncompleteRowId: string | null;
   onToggle: (rowId: string, done: boolean) => Promise<void>;
   onEdit: (rowId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
   onDuplicate: (rowId: string) => Promise<void>;
@@ -20,7 +20,7 @@ interface RowListProps {
 export function RowList({
   rows,
   editMode,
-  firstIncompleteIndex,
+  firstIncompleteRowId,
   onToggle,
   onEdit,
   onDuplicate,
@@ -32,9 +32,7 @@ export function RowList({
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  const handleDragStart = useCallback((id: string) => {
-    setDraggingId(id);
-  }, []);
+  const handleDragStart = useCallback((id: string) => setDraggingId(id), []);
 
   const handleDragOver = useCallback((e: React.DragEvent, id: string) => {
     e.preventDefault();
@@ -49,14 +47,12 @@ export function RowList({
         setDragOverId(null);
         return;
       }
-
       const fromIndex = rows.findIndex((r) => r.id === draggingId);
       const toIndex = rows.findIndex((r) => r.id === targetId);
       const reordered = [...rows];
       const [moved] = reordered.splice(fromIndex, 1);
       reordered.splice(toIndex, 0, moved);
       const withPositions = reordered.map((r, i) => ({ ...r, position: i }));
-
       setDraggingId(null);
       setDragOverId(null);
       await onReorder(withPositions);
@@ -93,7 +89,7 @@ export function RowList({
               <RowCard
                 row={row}
                 index={i}
-                isCurrent={i === firstIncompleteIndex}
+                isCurrent={row.id === firstIncompleteRowId}
                 editMode={editMode}
                 onToggle={() => onToggle(row.id, !row.done)}
                 onEdit={() => setEditingId(row.id)}
