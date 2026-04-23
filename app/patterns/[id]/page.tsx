@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { Pattern, Section, Row, Stitch } from '@/lib/types';
 import { todayIso } from '@/lib/utils';
@@ -12,6 +13,20 @@ import { SectionList } from '@/components/rows/SectionList';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Toast } from '@/components/ui/Toast';
 
+function CoverPlaceholder() {
+  return (
+    <div className="w-full h-full bg-gradient-to-br from-[#F0EDE8] to-[#DFF0EC] flex items-center justify-center">
+      <svg width="40" height="40" viewBox="0 0 32 32" fill="none" stroke="#9BBFBA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="16" cy="16" r="11" />
+        <path d="M5 16c4-5 8-7 11-7s7 2 11 7" />
+        <path d="M5 16c4 5 8 7 11 7s7-2 11-7" />
+        <path d="M16 5c-3 4-3 8-3 11s0 7 3 11" />
+        <path d="M16 5c3 4 3 8 3 11s0 7-3 11" />
+      </svg>
+    </div>
+  );
+}
+
 export default function PatternPage() {
   const { id } = useParams<{ id: string }>();
 
@@ -19,6 +34,7 @@ export default function PatternPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
 
   const didScrollRef = useRef(false);
@@ -53,6 +69,34 @@ export default function PatternPage() {
       didScrollRef.current = true;
     }
   }, [loading, firstIncompleteRowId]);
+
+  const handleCoverChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setCoverUploading(true);
+      const supabase = createClient();
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${id}/cover.${ext}`;
+      const { error } = await supabase.storage
+        .from('pattern-covers')
+        .upload(path, file, { upsert: true });
+      if (error) { setToast({ message: error.message, variant: 'error' }); setCoverUploading(false); return; }
+      const { data } = supabase.storage.from('pattern-covers').getPublicUrl(path);
+      const url = `${data.publicUrl}?v=${Date.now()}`;
+      await supabase.from('patterns').update({ cover_url: data.publicUrl }).eq('id', id);
+      setPattern((prev) => (prev ? { ...prev, cover_url: url } : prev));
+      setCoverUploading(false);
+      e.target.value = '';
+    },
+    [id],
+  );
+
+  const handleRemoveCover = useCallback(async () => {
+    const supabase = createClient();
+    await supabase.from('patterns').update({ cover_url: null }).eq('id', id);
+    setPattern((prev) => (prev ? { ...prev, cover_url: null } : prev));
+  }, [id]);
 
   const handleToggleRow = useCallback(
     async (sectionId: string, rowId: string, nextDone: boolean) => {
@@ -276,6 +320,46 @@ export default function PatternPage() {
             {editMode ? 'Done editing' : 'Edit rows'}
           </button>
         </header>
+
+        {/* Cover banner */}
+        {(pattern.cover_url || editMode) && (
+          <div className="relative w-full h-44 shrink-0 border-b border-black/[0.09] overflow-hidden">
+            {pattern.cover_url ? (
+              <Image
+                src={pattern.cover_url}
+                alt={pattern.name}
+                fill
+                className="object-cover"
+                sizes="100vw"
+                priority
+              />
+            ) : (
+              <CoverPlaceholder />
+            )}
+            {editMode && (
+              <div className="absolute bottom-3 right-4 flex gap-2">
+                <label className={`px-3 py-1.5 text-xs font-medium bg-white/90 backdrop-blur-sm border border-black/[0.09] rounded-sm transition-colors ${coverUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-white'}`}>
+                  {coverUploading ? 'Uploading…' : pattern.cover_url ? 'Change cover' : '+ Add cover'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleCoverChange}
+                    disabled={coverUploading}
+                  />
+                </label>
+                {pattern.cover_url && (
+                  <button
+                    onClick={handleRemoveCover}
+                    className="px-3 py-1.5 text-xs font-medium bg-white/90 backdrop-blur-sm border border-black/[0.09] rounded-sm hover:bg-white hover:text-coral transition-colors"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-1 min-w-0">
           <main className="flex-1 px-6 py-5 min-w-0 overflow-y-auto">
