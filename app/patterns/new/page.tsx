@@ -61,7 +61,7 @@ export default function NewPatternPage() {
     setSections((prev) =>
       prev.map((s) => {
         if (s.id !== sectionId) return s;
-        const title = s.builderTitle.trim() || `Row ${s.rows.length + 1}`;
+        const title = s.builderTitle.trim() || `Row ${s.rows.length}`;
         return {
           ...s,
           rows: [...s.rows, { title, stitches: s.builderStitches, note: s.builderNote.trim() }],
@@ -217,7 +217,7 @@ export default function NewPatternPage() {
                         <input
                           value={section.builderTitle}
                           onChange={(e) => updateSection(section.id, { builderTitle: e.target.value })}
-                          placeholder={`Row ${section.rows.length + 1}`}
+                          placeholder={`Row ${section.rows.length}`}
                           className="w-full border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
                         />
                       </div>
@@ -251,7 +251,7 @@ export default function NewPatternPage() {
                         {section.rows.map((row, ri) => (
                           <div key={ri} className="flex items-start gap-2 py-1">
                             <div className="w-5 h-5 rounded-full bg-surface-2 flex items-center justify-center text-xs font-bold text-text-secondary shrink-0 mt-0.5">
-                              {ri + 1}
+                              {ri}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-text-primary">{row.title}</p>
