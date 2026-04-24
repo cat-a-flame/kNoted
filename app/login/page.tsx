@@ -4,6 +4,9 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { Input } from '@/components/ui/Input';
+import { FormLabel } from '@/components/ui/FormLabel';
+import styles from './page.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,71 +29,57 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/patterns');
+    router.push('/projects');
     router.refresh();
   };
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-3xl font-bold text-text-primary">kNoted</h1>
-          <p className="mt-1 text-text-secondary text-sm">Your crochet pattern notebook</p>
+    <div className={styles.page}>
+      <div className={styles.container}>
+        <div className={styles.brand}>
+          <h1 className={styles.brandTitle}>kNoted</h1>
+          <p className={styles.brandSub}>Your crochet project notebook</p>
         </div>
 
-        <div className="bg-surface rounded-lg border border-black/[0.09] p-6 shadow-sm">
-          <h2 className="font-serif text-xl font-semibold text-text-primary mb-5">Sign in</h2>
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Sign in</h2>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1">
-                Email
-              </label>
-              <input
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.field}>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <Input
                 id="email"
                 type="email"
                 required
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-black/[0.09] rounded-sm px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-text-secondary mb-1">
-                Password
-              </label>
-              <input
+            <div className={styles.field}>
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <Input
                 id="password"
                 type="password"
                 required
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-black/[0.09] rounded-sm px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-coral bg-coral-light rounded-sm px-3 py-2">{error}</p>
-            )}
+            {error && <p className={styles.errorMsg}>{error}</p>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-teal text-white rounded-sm py-2 text-sm font-medium hover:bg-teal-dark transition-colors disabled:opacity-60"
-            >
+            <button type="submit" disabled={loading} className={styles.submitBtn}>
               {loading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
         </div>
 
-        <p className="mt-4 text-center text-sm text-text-secondary">
+        <p className={styles.footer}>
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-teal font-medium hover:underline">
-            Sign up
-          </Link>
+          <Link href="/signup" className={styles.footerLink}>Sign up</Link>
         </p>
       </div>
     </div>

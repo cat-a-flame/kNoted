@@ -9,6 +9,7 @@ import { MobileNav } from '@/components/layout/MobileNav';
 import { ProjectGrid } from '@/components/projects/ProjectGrid';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Toast } from '@/components/ui/Toast';
+import styles from './page.module.css';
 
 type Tab = 'active' | 'archived';
 
@@ -55,12 +56,7 @@ export default function ProjectsPage() {
         rowsByProject.set(projectId, arr);
       });
 
-      setProjects(
-        projectData.map((p) => ({
-          ...p,
-          rows: rowsByProject.get(p.id) ?? [],
-        })),
-      );
+      setProjects(projectData.map((p) => ({ ...p, rows: rowsByProject.get(p.id) ?? [] })));
       setLoading(false);
     };
     load();
@@ -87,31 +83,22 @@ export default function ProjectsPage() {
   const filtered = projects.filter((p) => p.archived === (tab === 'archived'));
 
   return (
-    <div className="flex min-h-screen">
+    <div className="appShell">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col pb-16 md:pb-0">
-        <header className="sticky top-0 z-10 bg-bg/90 backdrop-blur-sm border-b border-black/[0.09] px-6 py-3 flex items-center justify-between gap-4">
-          <h2 className="font-serif text-xl font-semibold text-text-primary">Projects</h2>
-          <Link
-            href="/projects/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-teal text-white rounded-sm hover:bg-teal-dark transition-colors"
-          >
-            <span>+ New project</span>
-          </Link>
+      <div className="pageContent">
+        <header className="pageHeader">
+          <h2 className={styles.headerTitle}>Projects</h2>
+          <Link href="/projects/new" className={styles.newBtn}>+ New project</Link>
         </header>
 
-        <main className="px-6 py-5 flex-1">
-          <div className="flex gap-1 mb-5 border-b border-black/[0.09]">
+        <main className="pageMain">
+          <div className={styles.tabs}>
             {(['active', 'archived'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px capitalize ${
-                  tab === t
-                    ? 'border-teal text-teal'
-                    : 'border-transparent text-text-secondary hover:text-text-primary'
-                }`}
+                className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`}
               >
                 {t}
               </button>
@@ -119,15 +106,11 @@ export default function ProjectsPage() {
           </div>
 
           {loading ? (
-            <div className="py-16 text-center">
-              <p className="text-text-tertiary text-sm">Loading projects…</p>
+            <div className={styles.loading}>
+              <p>Loading projects…</p>
             </div>
           ) : (
-            <ProjectGrid
-              projects={filtered}
-              onArchive={handleArchive}
-              onDelete={(id) => setDeleteId(id)}
-            />
+            <ProjectGrid projects={filtered} onArchive={handleArchive} onDelete={(id) => setDeleteId(id)} />
           )}
         </main>
       </div>
@@ -143,13 +126,7 @@ export default function ProjectsPage() {
         />
       )}
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          variant={toast.variant}
-          onDismiss={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

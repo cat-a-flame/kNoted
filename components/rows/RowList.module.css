@@ -1,0 +1,19 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item {
+  transition: opacity 0.15s;
+}
+
+.itemDragging {
+  opacity: 0.4;
+}
+
+.itemDragOver {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}

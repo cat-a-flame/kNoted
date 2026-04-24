@@ -1,6 +1,7 @@
 import { Stitch } from '@/lib/types';
 import { STITCHES } from '@/lib/stitches';
 import { Tooltip } from '@/components/ui/Tooltip';
+import styles from './StitchPill.module.css';
 
 interface StitchPillProps {
   stitch: Stitch;
@@ -10,7 +11,7 @@ export function StitchPill({ stitch }: StitchPillProps) {
   const def = STITCHES.find((s) => s.name === stitch.name);
 
   const pill = (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-teal-light text-teal-dark text-xs font-medium rounded-sm border border-teal/20">
+    <span className={styles.pill}>
       <span>{stitch.count}×</span>
       <span>{stitch.name}</span>
     </span>

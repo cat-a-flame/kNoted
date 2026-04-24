@@ -3,6 +3,9 @@
 import { useState, FormEvent } from 'react';
 import { Row, Stitch } from '@/lib/types';
 import { StitchBuilder } from './StitchBuilder';
+import { Input } from '@/components/ui/Input';
+import { FormLabel } from '@/components/ui/FormLabel';
+import styles from './RowEditForm.module.css';
 
 interface RowEditFormProps {
   row: Row;
@@ -24,44 +27,31 @@ export function RowEditForm({ row, onSave, onCancel }: RowEditFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 p-4 bg-surface-2 rounded-md border border-black/[0.09]">
+    <form onSubmit={handleSubmit} className={styles.form}>
       <div>
-        <label className="block text-xs font-medium text-text-secondary mb-1">Row name</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
-        />
+        <FormLabel>Row name</FormLabel>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-text-secondary mb-1">Stitches</label>
+        <FormLabel>Stitches</FormLabel>
         <StitchBuilder stitches={stitches} onChange={setStitches} />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-text-secondary mb-1">Note (optional)</label>
-        <input
+        <FormLabel>Note (optional)</FormLabel>
+        <Input
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Add a note…"
-          className="w-full border border-black/[0.09] rounded-sm px-3 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
         />
       </div>
 
-      <div className="flex gap-2 justify-end">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-3 py-1.5 text-xs font-medium rounded-sm border border-black/[0.09] text-text-secondary hover:bg-surface-3 transition-colors"
-        >
+      <div className={styles.formActions}>
+        <button type="button" onClick={onCancel} className={styles.cancelBtn}>
           Cancel
         </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-3 py-1.5 text-xs font-medium rounded-sm bg-teal text-white hover:bg-teal-dark transition-colors disabled:opacity-60"
-        >
+        <button type="submit" disabled={saving} className={styles.saveBtn}>
           {saving ? 'Saving…' : 'Save'}
         </button>
       </div>

@@ -6,18 +6,15 @@ import { Project } from '@/lib/types';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import styles from './page.module.css';
 
 type ProjectWithRows = Project & { rows: { done: boolean }[] };
 
 function buildHeatmap(projects: ProjectWithRows[]): Map<string, number> {
   const map = new Map<string, number>();
-  projects
-    .filter((p) => !p.archived)
-    .forEach((p) => {
-      p.activity.forEach((date) => {
-        map.set(date, (map.get(date) ?? 0) + 1);
-      });
-    });
+  projects.filter((p) => !p.archived).forEach((p) => {
+    p.activity.forEach((date) => { map.set(date, (map.get(date) ?? 0) + 1); });
+  });
   return map;
 }
 
@@ -32,22 +29,21 @@ function last70Days(): string[] {
 }
 
 function HeatmapCell({ count }: { count: number }) {
-  const intensity =
-    count === 0
-      ? 'bg-surface-3'
-      : count === 1
-      ? 'bg-teal-mid/40'
-      : count === 2
-      ? 'bg-teal/50'
-      : 'bg-teal';
+  const cellClass =
+    count === 0 ? styles.cellEmpty
+    : count === 1 ? styles.cellLow
+    : count === 2 ? styles.cellMid
+    : styles.cellHigh;
 
   return (
     <div
-      className={`w-3 h-3 rounded-[2px] ${intensity}`}
+      className={`${styles.cell} ${cellClass}`}
       title={count > 0 ? `${count} session${count > 1 ? 's' : ''}` : undefined}
     />
   );
 }
+
+const LEGEND_CLASSES = ['cellEmpty', 'cellLow', 'cellMid', 'cellHigh'] as const;
 
 export default function StatsPage() {
   const [projects, setProjects] = useState<ProjectWithRows[]>([]);
@@ -56,15 +52,10 @@ export default function StatsPage() {
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
-      const { data: projectData } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const { data: projectData } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
       if (!projectData) { setLoading(false); return; }
 
       const ids = projectData.map((p) => p.id);
-
       const { data: sectionData } = ids.length
         ? await supabase.from('sections').select('id, project_id').in('project_id', ids)
         : { data: [] };
@@ -87,12 +78,7 @@ export default function StatsPage() {
         rowsByProject.set(projectId, arr);
       });
 
-      setProjects(
-        projectData.map((p) => ({
-          ...p,
-          rows: rowsByProject.get(p.id) ?? [],
-        })),
-      );
+      setProjects(projectData.map((p) => ({ ...p, rows: rowsByProject.get(p.id) ?? [] })));
       setLoading(false);
     };
     load();
@@ -101,15 +87,12 @@ export default function StatsPage() {
   const active = projects.filter((p) => !p.archived);
   const finished = active.filter((p) => p.rows.length > 0 && p.rows.every((r) => r.done));
   const totalRowsDone = active.reduce((sum, p) => sum + p.rows.filter((r) => r.done).length, 0);
-  const avgProgress =
-    active.length === 0
-      ? 0
-      : Math.round(
-          active.reduce((sum, p) => {
-            const pct = p.rows.length === 0 ? 0 : (p.rows.filter((r) => r.done).length / p.rows.length) * 100;
-            return sum + pct;
-          }, 0) / active.length,
-        );
+  const avgProgress = active.length === 0 ? 0 : Math.round(
+    active.reduce((sum, p) => {
+      const pct = p.rows.length === 0 ? 0 : (p.rows.filter((r) => r.done).length / p.rows.length) * 100;
+      return sum + pct;
+    }, 0) / active.length,
+  );
 
   const heatmap = buildHeatmap(projects);
   const days = last70Days();
@@ -122,65 +105,56 @@ export default function StatsPage() {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="appShell">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col pb-16 md:pb-0">
-        <header className="sticky top-0 z-10 bg-bg/90 backdrop-blur-sm border-b border-black/[0.09] px-6 py-3">
-          <h2 className="font-serif text-xl font-semibold text-text-primary">Statistics</h2>
+      <div className="pageContent">
+        <header className="pageHeader">
+          <h2 className={styles.headerTitle}>Statistics</h2>
         </header>
 
-        <main className="px-6 py-5 flex flex-col gap-6">
+        <main className={styles.main}>
           {loading ? (
-            <p className="text-text-tertiary text-sm py-8 text-center">Loading…</p>
+            <p className={styles.loading}>Loading…</p>
           ) : (
             <>
-              {/* Metric cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className={styles.metricsGrid}>
                 {metrics.map(({ label, value }) => (
-                  <div key={label} className="bg-surface border border-black/[0.09] rounded-lg p-4">
-                    <p className="text-xs font-medium text-text-secondary mb-1">{label}</p>
-                    <p className="font-serif text-2xl font-bold text-text-primary">{value}</p>
+                  <div key={label} className={styles.metricCard}>
+                    <p className={styles.metricLabel}>{label}</p>
+                    <p className={styles.metricValue}>{value}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Activity heatmap */}
-              <div className="bg-surface border border-black/[0.09] rounded-lg p-5">
-                <h3 className="font-serif text-sm font-semibold text-text-primary mb-4">
-                  Activity — last 70 days
-                </h3>
-                <div className="flex flex-wrap gap-1">
-                  {days.map((day) => (
-                    <HeatmapCell key={day} count={heatmap.get(day) ?? 0} />
-                  ))}
+              <div className={styles.heatmapCard}>
+                <h3 className={styles.heatmapTitle}>Activity — last 70 days</h3>
+                <div className={styles.heatmapGrid}>
+                  {days.map((day) => <HeatmapCell key={day} count={heatmap.get(day) ?? 0} />)}
                 </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-xs text-text-tertiary">Less</span>
-                  <div className="flex gap-1">
-                    {['bg-surface-3', 'bg-teal-mid/40', 'bg-teal/50', 'bg-teal'].map((c) => (
-                      <div key={c} className={`w-3 h-3 rounded-[2px] ${c}`} />
+                <div className={styles.legend}>
+                  <span className={styles.legendLabel}>Less</span>
+                  <div className={styles.legendCells}>
+                    {LEGEND_CLASSES.map((c) => (
+                      <div key={c} className={`${styles.cell} ${styles[c]}`} />
                     ))}
                   </div>
-                  <span className="text-xs text-text-tertiary">More</span>
+                  <span className={styles.legendLabel}>More</span>
                 </div>
               </div>
 
-              {/* Per-project progress */}
               {active.length > 0 && (
-                <div className="bg-surface border border-black/[0.09] rounded-lg p-5">
-                  <h3 className="font-serif text-sm font-semibold text-text-primary mb-4">
-                    Project progress
-                  </h3>
-                  <div className="flex flex-col gap-4">
+                <div className={styles.progressCard}>
+                  <h3 className={styles.progressTitle}>Project progress</h3>
+                  <div className={styles.progressList}>
                     {active.map((p) => {
                       const d = p.rows.filter((r) => r.done).length;
                       const t = p.rows.length;
                       return (
-                        <div key={p.id}>
-                          <div className="flex justify-between items-baseline mb-1">
-                            <span className="text-sm font-medium text-text-primary truncate">{p.name}</span>
-                            <span className="text-xs text-text-secondary ml-2 shrink-0">{d} / {t}</span>
+                        <div key={p.id} className={styles.progressItem}>
+                          <div className={styles.progressItemHeader}>
+                            <span className={styles.progressItemName}>{p.name}</span>
+                            <span className={styles.progressItemCount}>{d} / {t}</span>
                           </div>
                           <ProgressBar value={d} max={t || 1} />
                         </div>

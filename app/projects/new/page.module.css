@@ -1,0 +1,251 @@
+.backBtn {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.backBtn:hover {
+  color: var(--color-text-secondary);
+}
+
+.headerTitle {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.main {
+  padding: 1.25rem 1.5rem;
+  max-width: 42rem;
+  width: 100%;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.errorMsg {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-coral);
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.sectionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+.sectionCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.sectionCardName {
+  font-family: var(--font-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.removeBtn {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  transition: color 0.15s;
+}
+
+.removeBtn:hover {
+  color: var(--color-coral);
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rowBuilder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.addRowToSection {
+  align-self: flex-start;
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--color-teal-light);
+  color: var(--color-teal-dark);
+  border: 1px solid rgba(29, 158, 117, 0.2);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s;
+}
+
+.addRowToSection:hover {
+  background-color: rgba(29, 158, 117, 0.1);
+}
+
+.rowList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 0.75rem;
+}
+
+.rowItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.rowBubble {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background-color: var(--color-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.rowBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.rowPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.rowNote {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin-top: 0.125rem;
+}
+
+.deleteRowBtn {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  transition: color 0.15s;
+}
+
+.deleteRowBtn:hover {
+  color: var(--color-coral);
+}
+
+/* Add section form */
+.addSectionForm {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.addSectionTrigger {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  transition: var(--transition-colors);
+}
+
+.addSectionTrigger:hover {
+  border-color: var(--color-teal);
+  color: var(--color-teal);
+}
+
+.addSectionBtn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--color-teal);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s;
+}
+
+.addSectionBtn:hover {
+  background-color: var(--color-teal-dark);
+}
+
+.cancelBtn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s;
+}
+
+.cancelBtn:hover {
+  background-color: var(--color-surface-2);
+}
+
+.submitBtn {
+  padding: 0.625rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--color-teal);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.submitBtn:hover {
+  background-color: var(--color-teal-dark);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+}

@@ -1,0 +1,101 @@
+.page {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 24rem;
+}
+
+.brand {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.brandTitle {
+  font-family: var(--font-serif);
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.brandSub {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardTitle {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 1.25rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.errorMsg {
+  font-size: 0.875rem;
+  color: var(--color-coral);
+  background-color: var(--color-coral-light);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+.submitBtn {
+  width: 100%;
+  background-color: var(--color-teal);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.submitBtn:hover {
+  background-color: var(--color-teal-dark);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+}
+
+.footer {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.footerLink {
+  color: var(--color-teal);
+  font-weight: 500;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}

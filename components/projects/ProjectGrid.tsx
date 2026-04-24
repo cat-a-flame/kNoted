@@ -1,5 +1,6 @@
 import { Project } from '@/lib/types';
 import { ProjectCard } from './ProjectCard';
+import styles from './ProjectGrid.module.css';
 
 interface ProjectGridProps {
   projects: (Project & { rows?: { done: boolean }[] })[];
@@ -10,14 +11,14 @@ interface ProjectGridProps {
 export function ProjectGrid({ projects, onArchive, onDelete }: ProjectGridProps) {
   if (projects.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <p className="text-text-tertiary text-sm">No projects here yet.</p>
+      <div className={styles.empty}>
+        <p>No projects here yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className={styles.grid}>
       {projects.map((project) => (
         <ProjectCard
           key={project.id}
