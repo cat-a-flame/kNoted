@@ -1,0 +1,42 @@
+.wrapper {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  z-index: 50;
+  animation: fadeInSlideUp 0.2s ease forwards;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.success {
+  background-color: var(--color-teal-dark);
+  color: #fff;
+}
+
+.error {
+  background-color: var(--color-coral);
+  color: #fff;
+}
+
+.dismiss {
+  opacity: 0.7;
+  font-size: 1.125rem;
+  line-height: 1;
+  margin-left: auto;
+  transition: var(--transition-opacity);
+  color: inherit;
+}
+
+.dismiss:hover {
+  opacity: 1;
+}

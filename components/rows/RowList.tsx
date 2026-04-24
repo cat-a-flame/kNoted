@@ -5,6 +5,7 @@ import { Row, Stitch } from '@/lib/types';
 import { RowCard } from './RowCard';
 import { RowEditForm } from './RowEditForm';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import styles from './RowList.module.css';
 
 interface RowListProps {
   rows: Row[];
@@ -62,7 +63,7 @@ export function RowList({
 
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <div className={styles.list}>
         {rows.map((row, i) => (
           <div
             key={row.id}
@@ -72,9 +73,7 @@ export function RowList({
             onDragOver={(e) => handleDragOver(e, row.id)}
             onDrop={(e) => handleDrop(e, row.id)}
             onDragEnd={() => { setDraggingId(null); setDragOverId(null); }}
-            className={`transition-opacity ${draggingId === row.id ? 'opacity-40' : ''} ${
-              dragOverId === row.id && draggingId !== row.id ? 'ring-2 ring-teal rounded-md' : ''
-            }`}
+            className={`${styles.item} ${draggingId === row.id ? styles.itemDragging : ''} ${dragOverId === row.id && draggingId !== row.id ? styles.itemDragOver : ''}`}
           >
             {editingId === row.id ? (
               <RowEditForm

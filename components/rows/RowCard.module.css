@@ -1,0 +1,150 @@
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s, opacity 0.15s;
+  background-color: var(--color-surface);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.cardDone {
+  background-color: var(--color-surface-2);
+  opacity: 0.7;
+}
+
+.cardDone:hover {
+  border-color: var(--border);
+}
+
+.dragHandle {
+  margin-top: 0.125rem;
+  cursor: grab;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle:hover {
+  color: var(--color-text-secondary);
+}
+
+.rowBubble {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.125rem;
+}
+
+.bubbleDefault {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+}
+
+.bubbleCurrent {
+  background-color: var(--color-teal);
+  color: #fff;
+}
+
+.bubbleDone {
+  background-color: var(--color-surface-3);
+  color: var(--color-text-tertiary);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.375;
+  color: var(--color-text-primary);
+}
+
+.rowTitleDone {
+  text-decoration: line-through;
+  color: var(--color-text-tertiary);
+}
+
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+}
+
+.note {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin-top: 0.375rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  color: var(--color-text-tertiary);
+  transition: var(--transition-colors);
+}
+
+.iconBtn:hover {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+}
+
+.iconBtnDanger:hover {
+  background-color: var(--color-coral-light);
+  color: var(--color-coral);
+}
+
+.checkBtn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  border: 2px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+  margin-left: 0.25rem;
+  flex-shrink: 0;
+}
+
+.checkBtn:hover {
+  border-color: var(--color-teal);
+}
+
+.checkBtnDone {
+  border-color: var(--color-teal);
+  background-color: var(--color-teal);
+  color: #fff;
+}

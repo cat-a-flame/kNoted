@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Stitch } from '@/lib/types';
 import { STITCHES } from '@/lib/stitches';
 import { StitchPill } from './StitchPill';
+import styles from './StitchBuilder.module.css';
 
 interface StitchBuilderProps {
   stitches: Stitch[];
@@ -12,7 +13,7 @@ interface StitchBuilderProps {
 
 function DragHandle() {
   return (
-    <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" className="text-text-tertiary shrink-0">
+    <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" className={styles.handle}>
       <circle cx="2" cy="2" r="1" />
       <circle cx="6" cy="2" r="1" />
       <circle cx="2" cy="6" r="1" />
@@ -66,12 +67,12 @@ export function StitchBuilder({ stitches, onChange }: StitchBuilderProps) {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
+    <div className={styles.root}>
+      <div className={styles.addRow}>
         <select
           value={selectedName}
           onChange={(e) => setSelectedName(e.target.value)}
-          className="flex-1 border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+          className={styles.select}
         >
           {STITCHES.map((s) => (
             <option key={s.name} value={s.name}>
@@ -84,19 +85,15 @@ export function StitchBuilder({ stitches, onChange }: StitchBuilderProps) {
           min={1}
           value={count}
           onChange={(e) => setCount(Math.max(1, Number(e.target.value)))}
-          className="w-20 border border-black/[0.09] rounded-sm px-2 py-1.5 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
+          className={styles.countInput}
         />
-        <button
-          type="button"
-          onClick={add}
-          className="px-3 py-1.5 text-sm font-medium bg-teal-light text-teal-dark border border-teal/20 rounded-sm hover:bg-teal/10 transition-colors"
-        >
+        <button type="button" onClick={add} className={styles.addBtn}>
           + Add
         </button>
       </div>
 
       {stitches.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className={styles.pillList}>
           {stitches.map((stitch, i) => (
             <div
               key={i}
@@ -105,16 +102,14 @@ export function StitchBuilder({ stitches, onChange }: StitchBuilderProps) {
               onDragOver={(e) => handleDragOver(e, i)}
               onDrop={(e) => handleDrop(e, i)}
               onDragEnd={cleanup}
-              className={`flex items-center gap-1 rounded-sm transition-opacity cursor-grab active:cursor-grabbing select-none ${
-                dragIndex === i ? 'opacity-40' : 'opacity-100'
-              } ${dragOverIndex === i && dragIndex !== i ? 'ring-2 ring-teal ring-offset-1' : ''}`}
+              className={`${styles.draggableItem} ${dragIndex === i ? styles.dragging : ''} ${dragOverIndex === i && dragIndex !== i ? styles.dragOver : ''}`}
             >
               <DragHandle />
               <StitchPill stitch={stitch} />
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-text-tertiary hover:text-coral transition-colors text-xs leading-none"
+                className={styles.removeBtn}
                 aria-label="Remove stitch"
               >
                 ×

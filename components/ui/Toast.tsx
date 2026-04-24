@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import styles from './Toast.module.css';
 
 type ToastVariant = 'success' | 'error';
 
@@ -11,11 +12,6 @@ interface ToastProps {
   duration?: number;
 }
 
-const variantClasses: Record<ToastVariant, string> = {
-  success: 'bg-teal-dark text-white',
-  error: 'bg-coral text-white',
-};
-
 export function Toast({ message, variant = 'success', onDismiss, duration = 3000 }: ToastProps) {
   useEffect(() => {
     const t = setTimeout(onDismiss, duration);
@@ -23,16 +19,10 @@ export function Toast({ message, variant = 'success', onDismiss, duration = 3000
   }, [onDismiss, duration]);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2">
-      <div
-        className={`flex items-center gap-3 px-4 py-3 rounded-md shadow-lg text-sm font-medium whitespace-nowrap ${variantClasses[variant]}`}
-      >
+    <div className={styles.wrapper}>
+      <div className={`${styles.toast} ${styles[variant]}`}>
         <span>{message}</span>
-        <button
-          onClick={onDismiss}
-          className="ml-auto opacity-70 hover:opacity-100 transition-opacity text-lg leading-none"
-          aria-label="Dismiss"
-        >
+        <button onClick={onDismiss} className={styles.dismiss} aria-label="Dismiss">
           ×
         </button>
       </div>

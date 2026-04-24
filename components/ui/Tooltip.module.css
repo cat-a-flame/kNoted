@@ -1,0 +1,35 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.content {
+  background-color: var(--color-text-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  padding: 0.375rem 0.625rem;
+  max-width: 200px;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
+  box-shadow: var(--shadow-lg);
+}
+
+.arrow {
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: var(--color-text-primary);
+  transform: rotate(45deg);
+  margin: -0.25rem auto 0;
+}

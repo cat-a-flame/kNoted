@@ -1,0 +1,53 @@
+.wrapper {
+  position: relative;
+}
+
+.trigger {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  transition: var(--transition-colors);
+}
+
+.trigger:hover {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 2rem;
+  z-index: 30;
+  background-color: var(--color-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.25rem 0;
+  min-width: 140px;
+}
+
+.item {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  transition: background-color 0.15s;
+}
+
+.item:hover {
+  background-color: var(--color-surface-2);
+}
+
+.itemDanger {
+  color: var(--color-coral);
+}
+
+.itemDanger:hover {
+  background-color: var(--color-coral-light);
+}

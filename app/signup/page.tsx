@@ -3,6 +3,10 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { Input } from '@/components/ui/Input';
+import { FormLabel } from '@/components/ui/FormLabel';
+import loginStyles from '../login/page.module.css';
+import styles from './page.module.css';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -37,18 +41,16 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center">
-          <h1 className="font-serif text-3xl font-bold text-text-primary mb-4">kNoted</h1>
-          <div className="bg-teal-light border border-teal/20 rounded-lg p-6">
-            <p className="text-sm text-teal-dark font-medium">
+      <div className={loginStyles.page}>
+        <div className={loginStyles.container} style={{ textAlign: 'center' }}>
+          <h1 className={loginStyles.brandTitle} style={{ marginBottom: '1rem' }}>kNoted</h1>
+          <div className={styles.successCard}>
+            <p className={styles.successText}>
               Check your email to confirm your account before signing in.
             </p>
           </div>
-          <p className="mt-4 text-sm text-text-secondary">
-            <Link href="/login" className="text-teal font-medium hover:underline">
-              Back to sign in
-            </Link>
+          <p className={loginStyles.footer} style={{ marginTop: '1rem' }}>
+            <Link href="/login" className={loginStyles.footerLink}>Back to sign in</Link>
           </p>
         </div>
       </div>
@@ -56,81 +58,46 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-3xl font-bold text-text-primary">kNoted</h1>
-          <p className="mt-1 text-text-secondary text-sm">Your crochet pattern notebook</p>
+    <div className={loginStyles.page}>
+      <div className={loginStyles.container}>
+        <div className={loginStyles.brand}>
+          <h1 className={loginStyles.brandTitle}>kNoted</h1>
+          <p className={loginStyles.brandSub}>Your crochet project notebook</p>
         </div>
 
-        <div className="bg-surface rounded-lg border border-black/[0.09] p-6 shadow-sm">
-          <h2 className="font-serif text-xl font-semibold text-text-primary mb-5">Create account</h2>
+        <div className={loginStyles.card}>
+          <h2 className={loginStyles.cardTitle}>Create account</h2>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-black/[0.09] rounded-sm px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
-              />
+          <form onSubmit={handleSubmit} className={loginStyles.form}>
+            <div className={loginStyles.field}>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <Input id="email" type="email" required autoComplete="email"
+                value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-text-secondary mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-black/[0.09] rounded-sm px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
-              />
+            <div className={loginStyles.field}>
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <Input id="password" type="password" required autoComplete="new-password"
+                value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-secondary mb-1">
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border border-black/[0.09] rounded-sm px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal"
-              />
+            <div className={loginStyles.field}>
+              <FormLabel htmlFor="confirmPassword">Confirm password</FormLabel>
+              <Input id="confirmPassword" type="password" required autoComplete="new-password"
+                value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
             </div>
 
-            {error && (
-              <p className="text-sm text-coral bg-coral-light rounded-sm px-3 py-2">{error}</p>
-            )}
+            {error && <p className={loginStyles.errorMsg}>{error}</p>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-teal text-white rounded-sm py-2 text-sm font-medium hover:bg-teal-dark transition-colors disabled:opacity-60"
-            >
+            <button type="submit" disabled={loading} className={loginStyles.submitBtn}>
               {loading ? 'Creating account…' : 'Create account'}
             </button>
           </form>
         </div>
 
-        <p className="mt-4 text-center text-sm text-text-secondary">
+        <p className={loginStyles.footer}>
           Already have an account?{' '}
-          <Link href="/login" className="text-teal font-medium hover:underline">
-            Sign in
-          </Link>
+          <Link href="/login" className={loginStyles.footerLink}>Sign in</Link>
         </p>
       </div>
     </div>

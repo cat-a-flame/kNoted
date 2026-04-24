@@ -1,0 +1,259 @@
+.backBtn {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.backBtn:hover {
+  color: var(--color-text-secondary);
+}
+
+/* Inline rename */
+.titleGroup {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.titleGroup:hover .renameBtn {
+  opacity: 1;
+}
+
+.titleText {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.renameInput {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-teal);
+  outline: none;
+  min-width: 0;
+  flex: 1;
+}
+
+.renameBtn {
+  opacity: 0;
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.renameBtn:hover {
+  color: var(--color-text-secondary);
+}
+
+.editToggle {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  transition: var(--transition-colors);
+}
+
+.editToggle:hover {
+  background-color: var(--color-surface-2);
+}
+
+.editToggleActive {
+  background-color: var(--color-teal);
+  color: #fff;
+  border-color: var(--color-teal);
+}
+
+.editToggleActive:hover {
+  background-color: var(--color-teal-dark);
+}
+
+/* Cover banner */
+.coverBanner {
+  position: relative;
+  width: 100%;
+  height: 11rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.coverActions {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.coverBtn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, color 0.15s;
+  cursor: pointer;
+}
+
+.coverBtn:hover {
+  background-color: #fff;
+}
+
+.coverBtnDisabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.coverBtnRemove:hover {
+  color: var(--color-coral);
+}
+
+/* Body */
+.body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.main {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.emptyState {
+  padding: 2rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Sidebar panel */
+.panel {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+  width: 18rem;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  padding: 1.25rem;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    display: flex;
+  }
+}
+
+.panelCard {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.panelLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.panelValue {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.panelSub {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.panelValueMuted {
+  color: var(--color-text-tertiary);
+  font-size: 1.125rem;
+}
+
+.sectionProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionProgressRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.25rem;
+}
+
+.sectionProgressName {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sectionProgressCount {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-left: 0.25rem;
+  flex-shrink: 0;
+}
+
+/* Loading/not found states */
+.centeredPage {
+  display: flex;
+  min-height: 100vh;
+}
+
+.centered {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notFound {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.notFoundText {
+  color: var(--color-text-secondary);
+}
+
+.backLink {
+  font-size: 0.875rem;
+  color: var(--color-teal);
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
