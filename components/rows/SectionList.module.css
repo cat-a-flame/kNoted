@@ -103,6 +103,26 @@
   padding: 0 0.25rem;
 }
 
+.detailSaveBtn {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 0.3125rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--color-coral);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.detailSaveBtn:hover {
+  background-color: var(--color-coral-dark);
+}
+
+.detailSaveBtn:disabled {
+  opacity: 0.6;
+}
+
 /* Add row form */
 .addRowForm {
   margin-top: 0.5rem;

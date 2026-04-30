@@ -45,19 +45,29 @@ function SectionDetailEditor({
   const [yarnWeight, setYarnWeight] = useState(section.yarn_weight ?? '');
   const [yarnColour, setYarnColour] = useState(section.yarn_colour ?? '');
   const [hookSize, setHookSize] = useState(section.hook_size ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onUpdate({
+      yarn_name: yarnName.trim() || null,
+      yarn_weight: yarnWeight.trim() || null,
+      yarn_colour: yarnColour.trim() || null,
+      hook_size: hookSize.trim() || null,
+    });
+    setSaving(false);
+  };
 
   return (
     <div className={styles.detailGrid}>
       <div>
         <FormLabel variant="meta">Yarn name</FormLabel>
         <Input inputSize="sm" value={yarnName} onChange={(e) => setYarnName(e.target.value)}
-          onBlur={() => onUpdate({ yarn_name: yarnName.trim() || null })}
           placeholder="e.g. Lion Brand" />
       </div>
       <div>
         <FormLabel variant="meta">Yarn weight</FormLabel>
         <Input inputSize="sm" value={yarnWeight} onChange={(e) => setYarnWeight(e.target.value)}
-          onBlur={() => onUpdate({ yarn_weight: yarnWeight.trim() || null })}
           placeholder="e.g. DK" list="sl-yarn-weights" />
         <datalist id="sl-yarn-weights">
           {YARN_WEIGHTS.map((w) => <option key={w} value={w} />)}
@@ -66,18 +76,19 @@ function SectionDetailEditor({
       <div>
         <FormLabel variant="meta">Colour</FormLabel>
         <Input inputSize="sm" value={yarnColour} onChange={(e) => setYarnColour(e.target.value)}
-          onBlur={() => onUpdate({ yarn_colour: yarnColour.trim() || null })}
           placeholder="e.g. Forest Green" />
       </div>
       <div>
         <FormLabel variant="meta">Hook size</FormLabel>
         <Input inputSize="sm" value={hookSize} onChange={(e) => setHookSize(e.target.value)}
-          onBlur={() => onUpdate({ hook_size: hookSize.trim() || null })}
           placeholder="e.g. 5mm" list="sl-hook-sizes" />
         <datalist id="sl-hook-sizes">
           {HOOK_SIZES.map((s) => <option key={s} value={s} />)}
         </datalist>
       </div>
+      <button onClick={handleSave} disabled={saving} className={styles.detailSaveBtn}>
+        {saving ? 'Saving…' : 'Save'}
+      </button>
     </div>
   );
 }
@@ -204,7 +215,6 @@ export function SectionList({
                       autoFocus
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
-                      onBlur={() => submitRename(section.id)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') submitRename(section.id);
                         if (e.key === 'Escape') { setRenamingId(null); setRenameValue(''); }
