@@ -31,6 +31,23 @@ interface SectionListProps {
   onAddSection: (name: string) => Promise<void>;
 }
 
+const COLLAPSED_KEY = 'knoted:collapsed-sections';
+
+function loadCollapsed(): Set<string> {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveCollapsed(ids: Set<string>) {
+  try {
+    localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...ids]));
+  } catch {}
+}
+
 const YARN_WEIGHTS = ['Lace', 'Fingering', 'Sport', 'DK', 'Worsted', 'Aran', 'Bulky', 'Super Bulky'];
 const HOOK_SIZES = ['2mm', '2.5mm', '3mm', '3.25mm', '3.5mm', '3.75mm', '4mm', '4.5mm', '5mm', '5.5mm', '6mm', '6.5mm', '7mm', '8mm', '9mm', '10mm', '12mm', '15mm'];
 
@@ -119,7 +136,7 @@ export function SectionList({
 }: SectionListProps) {
   const showHeaders = sections.length > 1;
 
-  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(loadCollapsed);
   const [addingRowTo, setAddingRowTo] = useState<string | null>(null);
   const [rowNote, setRowNote] = useState('');
   const [rowStitchCount, setRowStitchCount] = useState('');
@@ -138,6 +155,7 @@ export function SectionList({
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      saveCollapsed(next);
       return next;
     });
   };
