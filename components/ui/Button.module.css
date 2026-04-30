@@ -16,11 +16,11 @@
 
 /* variants */
 .primary {
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
 }
 .primary:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 .secondary {
@@ -41,7 +41,7 @@
 }
 
 .danger {
-  background-color: var(--color-coral);
+  background-color: var(--color-danger);
   color: #fff;
 }
 .danger:hover {

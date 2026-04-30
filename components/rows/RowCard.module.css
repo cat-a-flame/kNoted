@@ -57,7 +57,7 @@
 }
 
 .bubbleCurrent {
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
 }
 
@@ -127,8 +127,8 @@
 }
 
 .iconBtnDanger:hover {
-  background-color: var(--color-coral-light);
-  color: var(--color-coral);
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
 .checkBtn {
@@ -146,11 +146,11 @@
 }
 
 .checkBtn:hover {
-  border-color: var(--color-teal);
+  border-color: var(--color-coral);
 }
 
 .checkBtnDone {
-  border-color: var(--color-teal);
-  background-color: var(--color-teal);
+  border-color: var(--color-coral);
+  background-color: var(--color-coral);
   color: #fff;
 }

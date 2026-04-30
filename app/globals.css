@@ -8,13 +8,13 @@
   --color-surface-2: #f0ede7;
   --color-surface-3: #e8e4dc;
 
-  --color-teal: #1d9e75;
-  --color-teal-light: #e1f5ee;
-  --color-teal-mid: #9fe1cb;
-  --color-teal-dark: #085041;
+  --color-coral: #f26e4d;
+  --color-coral-light: #fde8e2;
+  --color-coral-mid: #f7a28d;
+  --color-coral-dark: #c24423;
 
-  --color-coral: #d85a30;
-  --color-coral-light: #faece7;
+  --color-danger: #d85a30;
+  --color-danger-light: #faece7;
 
   --color-amber: #ba7517;
   --color-amber-light: #faeeda;
@@ -36,7 +36,7 @@
 
   /* Typography */
   --font-serif: var(--font-lora), Georgia, serif;
-  --font-sans: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+  --font-sans: var(--font-figtree), 'Figtree', system-ui, sans-serif;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
