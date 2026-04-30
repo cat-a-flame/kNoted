@@ -45,9 +45,9 @@
 }
 
 .itemDanger {
-  color: var(--color-coral);
+  color: var(--color-danger);
 }
 
 .itemDanger:hover {
-  background-color: var(--color-coral-light);
+  background-color: var(--color-danger-light);
 }

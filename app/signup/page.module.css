@@ -1,5 +1,5 @@
 .successCard {
-  background-color: var(--color-teal-light);
+  background-color: var(--color-coral-light);
   border: 1px solid rgba(29, 158, 117, 0.2);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -7,6 +7,6 @@
 
 .successText {
   font-size: 0.875rem;
-  color: var(--color-teal-dark);
+  color: var(--color-coral-dark);
   font-weight: 500;
 }

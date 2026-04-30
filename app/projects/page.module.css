@@ -31,8 +31,8 @@
 }
 
 .tabActive {
-  border-bottom-color: var(--color-teal);
-  color: var(--color-teal);
+  border-bottom-color: var(--color-coral);
+  color: var(--color-coral);
 }
 
 .loading {

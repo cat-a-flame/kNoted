@@ -19,12 +19,12 @@
 }
 
 .success {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
   color: #fff;
 }
 
 .error {
-  background-color: var(--color-coral);
+  background-color: var(--color-danger);
   color: #fff;
 }
 

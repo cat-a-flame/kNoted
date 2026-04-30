@@ -44,7 +44,7 @@
   color: var(--color-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-teal);
+  border-bottom: 1px solid var(--color-coral);
   outline: none;
 }
 
@@ -54,7 +54,7 @@
 }
 
 .allDoneIcon {
-  color: var(--color-teal);
+  color: var(--color-coral);
   flex-shrink: 0;
 }
 
@@ -82,8 +82,8 @@
 }
 
 .sectionIconBtnDanger:hover {
-  background-color: var(--color-coral-light);
-  color: var(--color-coral);
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
 /* Detail text */
@@ -124,14 +124,14 @@
   padding: 0.375rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 500;
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
   border-radius: var(--radius-sm);
   transition: background-color 0.15s;
 }
 
 .addRowBtn:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 .cancelBtn {
@@ -162,8 +162,8 @@
 }
 
 .dashedBtn:hover {
-  border-color: var(--color-teal);
-  color: var(--color-teal);
+  border-color: var(--color-coral);
+  color: var(--color-coral);
 }
 
 .dashedBtnLg {
@@ -178,8 +178,8 @@
 }
 
 .dashedBtnLg:hover {
-  border-color: var(--color-teal);
-  color: var(--color-teal);
+  border-color: var(--color-coral);
+  color: var(--color-coral);
 }
 
 /* Add section form */
@@ -196,14 +196,14 @@
   padding: 0.375rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 500;
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
   border-radius: var(--radius-sm);
   transition: background-color 0.15s, opacity 0.15s;
 }
 
 .addSectionBtn:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 .addSectionBtn:disabled {

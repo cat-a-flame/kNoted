@@ -57,7 +57,7 @@
   color: var(--color-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-teal);
+  border-bottom: 1px solid var(--color-coral);
   outline: none;
   min-width: 0;
   flex: 1;
@@ -90,13 +90,13 @@
 }
 
 .editToggleActive {
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
-  border-color: var(--color-teal);
+  border-color: var(--color-coral);
 }
 
 .editToggleActive:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 /* Two-column layout */
@@ -181,7 +181,7 @@
 }
 
 .coverBtnRemove:hover {
-  color: var(--color-coral);
+  color: var(--color-danger);
 }
 
 /* Stats card */
@@ -279,7 +279,7 @@
 
 .backLink {
   font-size: 0.875rem;
-  color: var(--color-teal);
+  color: var(--color-coral);
 }
 
 .backLink:hover {

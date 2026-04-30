@@ -33,13 +33,13 @@
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: var(--radius-sm);
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
   transition: background-color 0.15s, opacity 0.15s;
 }
 
 .saveBtn:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 .saveBtn:disabled {
