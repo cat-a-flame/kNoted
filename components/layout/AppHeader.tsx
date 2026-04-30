@@ -65,31 +65,27 @@ export function AppHeader() {
   const pathname = usePathname();
 
   return (
-    <>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Link href="/projects" className={styles.brand}>kNoted</Link>
-          <div className={styles.headerRight}>
-            <UserMenu />
-          </div>
+    <header className={styles.header}>
+      <div className={styles.headerInner}>
+        <Link href="/projects" className={styles.brand}>kNoted</Link>
+        <div className={styles.headerRight}>
+          <nav className={styles.headerNav}>
+            {navItems.map(({ href, label }) => {
+              const active = pathname === href || pathname.startsWith(href + '/');
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`${styles.headerNavLink} ${active ? styles.headerNavLinkActive : ''}`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+          <UserMenu />
         </div>
-      </header>
-      <nav className={styles.nav}>
-        <div className={styles.navInner}>
-          {navItems.map(({ href, label }) => {
-            const active = pathname === href || pathname.startsWith(href + '/');
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`${styles.navLink} ${active ? styles.navLinkActive : ''}`}
-              >
-                {label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-    </>
+      </div>
+    </header>
   );
 }
