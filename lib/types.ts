@@ -1,8 +1,3 @@
-export type Stitch = {
-  name: string;
-  count: number;
-};
-
 export type Section = {
   id: string;
   project_id: string;
@@ -20,7 +15,6 @@ export type Row = {
   section_id: string;
   position: number;
   title: string;
-  stitches: Stitch[];
   note: string | null;
   stitch_count: number | null;
   done: boolean;

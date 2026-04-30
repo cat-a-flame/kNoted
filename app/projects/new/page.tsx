@@ -101,7 +101,7 @@ export default function NewProjectPage() {
 
       if (sec.rows.length > 0) {
         const { error: rowsError } = await supabase.from('rows').insert(
-          sec.rows.map((row, ri) => ({ section_id: sectionData.id, position: ri, title: row.title, stitches: [], note: row.note || null, stitch_count: row.stitch_count, done: false })),
+          sec.rows.map((row, ri) => ({ section_id: sectionData.id, position: ri, title: row.title, note: row.note || null, stitch_count: row.stitch_count, done: false })),
         );
         if (rowsError) { setToast({ message: rowsError.message, variant: 'error' }); setSaving(false); return; }
       }

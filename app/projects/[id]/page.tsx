@@ -134,7 +134,7 @@ export default function ProjectPage() {
     const insertPos = source.position + 1;
     const reindexed = rows.map((r) => r.position >= insertPos ? { ...r, position: r.position + 1 } : r);
     const { data, error } = await supabase.from('rows')
-      .insert({ section_id: sectionId, position: insertPos, title: source.title, stitches: source.stitches, note: source.note, stitch_count: source.stitch_count, done: false })
+      .insert({ section_id: sectionId, position: insertPos, title: source.title, note: source.note, stitch_count: source.stitch_count, done: false })
       .select('*').single();
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     await Promise.all(reindexed.filter((r) => r.id !== data.id && r.position >= insertPos).map((r) => supabase.from('rows').update({ position: r.position }).eq('id', r.id)));
@@ -162,7 +162,7 @@ export default function ProjectPage() {
     const rowCount = (section?.rows ?? []).length;
     const title = rowCount === 0 ? 'Base' : `Row ${rowCount}`;
     const { data: newRow, error } = await supabase.from('rows')
-      .insert({ section_id: sectionId, position: rowCount, title, stitches: [], note: data.note, stitch_count: data.stitch_count, done: false })
+      .insert({ section_id: sectionId, position: rowCount, title, note: data.note, stitch_count: data.stitch_count, done: false })
       .select('*').single();
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     setSections((prev) => prev.map((s) => s.id === sectionId ? { ...s, rows: [...(s.rows ?? []), newRow as Row] } : s));
