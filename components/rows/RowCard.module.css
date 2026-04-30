@@ -1,8 +1,8 @@
 .card {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: 1rem;
+  padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   transition: border-color 0.15s, opacity 0.15s;
@@ -40,8 +40,8 @@
 
 .rowBubble {
   flex-shrink: 0;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -80,14 +80,12 @@
 
 .stitchCount {
   font-size: 0.75rem;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   margin-top: 0.125rem;
 }
 
 .note {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  font-style: italic;
+  font-size: .85rem;
   margin-top: 0.375rem;
 }
 

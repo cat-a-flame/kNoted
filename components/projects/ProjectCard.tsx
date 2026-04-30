@@ -3,10 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Project } from '@/lib/types';
-import { Badge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { CoverPlaceholder } from '@/components/ui/CoverPlaceholder';
-import { ContextMenu } from './ContextMenu';
 import styles from './ProjectCard.module.css';
 
 interface ProjectCardProps {
@@ -19,9 +17,6 @@ export function ProjectCard({ project, onArchive, onDelete }: ProjectCardProps) 
   const rows = project.rows ?? [];
   const done = rows.filter((r) => r.done).length;
   const total = rows.length;
-  const allDone = total > 0 && done === total;
-
-  const badgeVariant = project.archived ? 'archived' : allDone ? 'done' : 'inProgress';
 
   return (
     <div className={styles.card}>
@@ -45,15 +40,6 @@ export function ProjectCard({ project, onArchive, onDelete }: ProjectCardProps) 
             <h3 className={styles.projectName}>{project.name}</h3>
             <p className={styles.rowCount}>{done} / {total} rows</p>
           </Link>
-          <div className={styles.badges}>
-            <Badge variant={badgeVariant} />
-            <ContextMenu
-              items={[
-                { label: project.archived ? 'Unarchive' : 'Archive', onClick: onArchive },
-                { label: 'Delete', onClick: onDelete, variant: 'danger' },
-              ]}
-            />
-          </div>
         </div>
         <ProgressBar value={done} max={total || 1} className={styles.progress} />
       </div>

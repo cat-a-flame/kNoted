@@ -14,7 +14,7 @@
   display: block;
   position: relative;
   width: 100%;
-  height: 8rem;
+  height: 15rem;
 }
 
 .body {
@@ -35,7 +35,7 @@
 
 .projectName {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: var(--color-text-primary);
   overflow: hidden;

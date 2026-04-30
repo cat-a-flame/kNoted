@@ -226,12 +226,6 @@ export default function ProjectPage() {
         <div className={styles.container}>
           {/* Page sub-header */}
           <div className={styles.pageTop}>
-            <Link href="/projects" className={styles.backBtn} aria-label="Back to projects">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M11 4L6 9l5 5" />
-              </svg>
-            </Link>
-
             <div className={styles.titleGroup}>
               {isRenaming ? (
                 <input
@@ -264,7 +258,7 @@ export default function ProjectPage() {
               onClick={() => setEditMode((v) => !v)}
               className={`${styles.editToggle} ${editMode ? styles.editToggleActive : ''}`}
             >
-              {editMode ? 'Done editing' : 'Edit rows'}
+              {editMode ? 'Done editing' : 'Edit'}
             </button>
           </div>
 
@@ -306,7 +300,7 @@ export default function ProjectPage() {
                 {editMode && (
                   <div className={styles.coverActions}>
                     <label className={`${styles.coverBtn} ${coverUploading ? styles.coverBtnDisabled : ''}`}>
-                      {coverUploading ? 'Uploading…' : project.cover_url ? 'Change' : '+ Cover'}
+                      {coverUploading ? 'Uploading…' : project.cover_url ? 'Change' : '+ Photo'}
                       <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverChange} disabled={coverUploading} />
                     </label>
                     {project.cover_url && (
