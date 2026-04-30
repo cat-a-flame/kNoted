@@ -1,24 +1,9 @@
-.backBtn {
-  color: var(--color-text-tertiary);
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-
-.backBtn:hover {
-  color: var(--color-text-secondary);
-}
-
-.headerTitle {
-  font-family: var(--font-serif);
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
 .main {
-  padding: 1.25rem 1.5rem;
+  flex: 1;
   max-width: 42rem;
   width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
 }
 
 .form {

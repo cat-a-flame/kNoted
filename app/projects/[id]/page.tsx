@@ -7,8 +7,8 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { Project, Section, Row } from '@/lib/types';
 import { todayIso } from '@/lib/utils';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { MobileNav } from '@/components/layout/MobileNav';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppFooter } from '@/components/layout/AppFooter';
 import { SectionList } from '@/components/rows/SectionList';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { CoverPlaceholder } from '@/components/ui/CoverPlaceholder';
@@ -193,160 +193,168 @@ export default function ProjectPage() {
 
   if (loading) {
     return (
-      <div className={styles.centeredPage}>
-        <Sidebar />
-        <div className={styles.centered}>
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Loading…</p>
-        </div>
+      <div className="appShell">
+        <AppHeader />
+        <main className={styles.pageMain}>
+          <p className={styles.loadingText}>Loading…</p>
+        </main>
+        <AppFooter />
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className={styles.centeredPage}>
-        <Sidebar />
-        <div className={styles.notFound}>
-          <p className={styles.notFoundText}>Project not found.</p>
-          <Link href="/projects" className={styles.backLink}>Back to projects</Link>
-        </div>
+      <div className="appShell">
+        <AppHeader />
+        <main className={styles.pageMain}>
+          <div className={styles.notFound}>
+            <p className={styles.notFoundText}>Project not found.</p>
+            <Link href="/projects" className={styles.backLink}>Back to projects</Link>
+          </div>
+        </main>
+        <AppFooter />
       </div>
     );
   }
 
   return (
     <div className="appShell">
-      <Sidebar />
+      <AppHeader />
 
-      <div className="pageContent">
-        <header className="pageHeader">
-          <Link href="/projects" className={styles.backBtn} aria-label="Back">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M11 4L6 9l5 5" />
-            </svg>
-          </Link>
+      <main className={styles.pageMain}>
+        <div className={styles.container}>
+          {/* Page sub-header */}
+          <div className={styles.pageTop}>
+            <Link href="/projects" className={styles.backBtn} aria-label="Back to projects">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M11 4L6 9l5 5" />
+              </svg>
+            </Link>
 
-          <div className={styles.titleGroup}>
-            {isRenaming ? (
-              <input
-                autoFocus
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onBlur={submitRename}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') submitRename();
-                  if (e.key === 'Escape') setIsRenaming(false);
-                }}
-                className={styles.renameInput}
-              />
-            ) : (
-              <>
-                <h2 className={styles.titleText}>{project.name}</h2>
-                <button
-                  onClick={() => { setIsRenaming(true); setRenameValue(project.name); }}
-                  className={styles.renameBtn}
-                  title="Rename project"
-                >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M11.5 2.5a2.12 2.12 0 0 1 3 3L5 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </button>
-              </>
-            )}
-          </div>
-
-          <button
-            onClick={() => setEditMode((v) => !v)}
-            className={`${styles.editToggle} ${editMode ? styles.editToggleActive : ''}`}
-          >
-            {editMode ? 'Done editing' : 'Edit rows'}
-          </button>
-        </header>
-
-        {(project.cover_url || editMode) && (
-          <div className={styles.coverBanner}>
-            {project.cover_url ? (
-              <Image src={project.cover_url} alt={project.name} fill style={{ objectFit: 'cover' }} sizes="100vw" priority />
-            ) : (
-              <CoverPlaceholder iconSize={40} />
-            )}
-            {editMode && (
-              <div className={styles.coverActions}>
-                <label className={`${styles.coverBtn} ${coverUploading ? styles.coverBtnDisabled : ''}`}>
-                  {coverUploading ? 'Uploading…' : project.cover_url ? 'Change cover' : '+ Add cover'}
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverChange} disabled={coverUploading} />
-                </label>
-                {project.cover_url && (
-                  <button onClick={handleRemoveCover} className={`${styles.coverBtn} ${styles.coverBtnRemove}`}>
-                    Remove
+            <div className={styles.titleGroup}>
+              {isRenaming ? (
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onBlur={submitRename}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') submitRename();
+                    if (e.key === 'Escape') setIsRenaming(false);
+                  }}
+                  className={styles.renameInput}
+                />
+              ) : (
+                <>
+                  <h1 className={styles.titleText}>{project.name}</h1>
+                  <button
+                    onClick={() => { setIsRenaming(true); setRenameValue(project.name); }}
+                    className={styles.renameBtn}
+                    title="Rename project"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M11.5 2.5a2.12 2.12 0 0 1 3 3L5 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
                   </button>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className={styles.body}>
-          <main className={styles.main}>
-            {sections.length === 0 ? (
-              <p className={styles.emptyState}>
-                No rows yet.{' '}
-                {editMode ? 'Use "Add row" below to get started.' : 'Turn on "Edit rows" to add rows.'}
-              </p>
-            ) : (
-              <SectionList
-                sections={sections}
-                editMode={editMode}
-                firstIncompleteRowId={firstIncompleteRowId}
-                onToggleRow={handleToggleRow}
-                onEditRow={handleEditRow}
-                onDuplicateRow={handleDuplicateRow}
-                onDeleteRow={handleDeleteRow}
-                onReorderRows={handleReorderRows}
-                onAddRow={handleAddRow}
-                onUpdateSection={handleUpdateSection}
-                onDeleteSection={handleDeleteSection}
-                onAddSection={handleAddSection}
-              />
-            )}
-          </main>
-
-          <aside className={styles.panel}>
-            <div className={styles.panelCard}>
-              <p className={styles.panelLabel}>Progress</p>
-              <p className={styles.panelValue}>
-                {done} <span className={styles.panelValueMuted}>/ {total}</span>
-              </p>
-              <p className={styles.panelSub}>rows completed</p>
-              <ProgressBar value={done} max={total || 1} />
+                </>
+              )}
             </div>
 
-            {sections.length > 1 && (
-              <div className={styles.panelCard}>
-                <p className={styles.panelLabel} style={{ marginBottom: '0.75rem' }}>By section</p>
-                <div className={styles.sectionProgress}>
-                  {sections.map((s) => {
-                    const sRows = s.rows ?? [];
-                    const sDone = sRows.filter((r) => r.done).length;
-                    const sTotal = sRows.length;
-                    return (
-                      <div key={s.id}>
-                        <div className={styles.sectionProgressRow}>
-                          <span className={styles.sectionProgressName}>{s.name}</span>
-                          <span className={styles.sectionProgressCount}>{sDone} / {sTotal}</span>
-                        </div>
-                        <ProgressBar value={sDone} max={sTotal || 1} />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </aside>
-        </div>
-      </div>
+            <button
+              onClick={() => setEditMode((v) => !v)}
+              className={`${styles.editToggle} ${editMode ? styles.editToggleActive : ''}`}
+            >
+              {editMode ? 'Done editing' : 'Edit rows'}
+            </button>
+          </div>
 
-      <MobileNav />
+          {/* Two-column body */}
+          <div className={styles.twoCol}>
+            {/* Left: row list */}
+            <div className={styles.rowsCol}>
+              {sections.length === 0 ? (
+                <p className={styles.emptyState}>
+                  No rows yet.{' '}
+                  {editMode ? 'Use "Add row" below to get started.' : 'Turn on "Edit rows" to add rows.'}
+                </p>
+              ) : (
+                <SectionList
+                  sections={sections}
+                  editMode={editMode}
+                  firstIncompleteRowId={firstIncompleteRowId}
+                  onToggleRow={handleToggleRow}
+                  onEditRow={handleEditRow}
+                  onDuplicateRow={handleDuplicateRow}
+                  onDeleteRow={handleDeleteRow}
+                  onReorderRows={handleReorderRows}
+                  onAddRow={handleAddRow}
+                  onUpdateSection={handleUpdateSection}
+                  onDeleteSection={handleDeleteSection}
+                  onAddSection={handleAddSection}
+                />
+              )}
+            </div>
+
+            {/* Right: cover + stats */}
+            <aside className={styles.sidebar}>
+              <div className={styles.coverCard}>
+                {project.cover_url ? (
+                  <Image src={project.cover_url} alt={project.name} fill style={{ objectFit: 'cover' }} sizes="320px" priority />
+                ) : (
+                  <CoverPlaceholder iconSize={36} />
+                )}
+                {editMode && (
+                  <div className={styles.coverActions}>
+                    <label className={`${styles.coverBtn} ${coverUploading ? styles.coverBtnDisabled : ''}`}>
+                      {coverUploading ? 'Uploading…' : project.cover_url ? 'Change' : '+ Cover'}
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverChange} disabled={coverUploading} />
+                    </label>
+                    {project.cover_url && (
+                      <button onClick={handleRemoveCover} className={`${styles.coverBtn} ${styles.coverBtnRemove}`}>
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.statsCard}>
+                <p className={styles.statsLabel}>Progress</p>
+                <p className={styles.statsValue}>
+                  {done} <span className={styles.statsValueMuted}>/ {total}</span>
+                </p>
+                <p className={styles.statsSub}>rows completed</p>
+                <ProgressBar value={done} max={total || 1} />
+              </div>
+
+              {sections.length > 1 && (
+                <div className={styles.statsCard}>
+                  <p className={styles.statsLabel} style={{ marginBottom: '0.75rem' }}>By section</p>
+                  <div className={styles.sectionProgress}>
+                    {sections.map((s) => {
+                      const sRows = s.rows ?? [];
+                      const sDone = sRows.filter((r) => r.done).length;
+                      const sTotal = sRows.length;
+                      return (
+                        <div key={s.id}>
+                          <div className={styles.sectionProgressRow}>
+                            <span className={styles.sectionProgressName}>{s.name}</span>
+                            <span className={styles.sectionProgressCount}>{sDone} / {sTotal}</span>
+                          </div>
+                          <ProgressBar value={sDone} max={sTotal || 1} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </aside>
+          </div>
+        </div>
+      </main>
+
+      <AppFooter />
 
       {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
     </div>

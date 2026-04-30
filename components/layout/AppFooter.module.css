@@ -1,0 +1,26 @@
+.footer {
+  border-top: 1px solid var(--border);
+  background-color: var(--color-surface);
+  margin-top: auto;
+}
+
+.inner {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--font-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.tagline {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
