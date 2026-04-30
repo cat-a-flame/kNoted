@@ -232,7 +232,6 @@ export default function ProjectPage() {
                   autoFocus
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
-                  onBlur={submitRename}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') submitRename();
                     if (e.key === 'Escape') setIsRenaming(false);

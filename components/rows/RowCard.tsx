@@ -48,12 +48,9 @@ export function RowCard({
         </div>
       )}
 
-      <div className={`${styles.rowBubble} ${bubbleClass}`}>{index === 0 ? 'B' : index}.</div>
+      <div className={`${styles.rowBubble} ${bubbleClass}`}>{index}</div>
 
       <div className={styles.body}>
-        <p className={`${styles.rowTitle} ${row.done ? styles.rowTitleDone : ''}`}>
-          {index === 0 ? 'Base' : `Row ${index}`}
-        </p>
         {row.stitch_count != null && (
           <p className={styles.stitchCount}>{row.stitch_count} sts</p>
         )}
