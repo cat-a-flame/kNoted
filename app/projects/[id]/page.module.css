@@ -211,6 +211,12 @@
   font-size: 1.125rem;
 }
 
+.statsDivider {
+  height: 1px;
+  background-color: var(--border);
+  margin: 0.75rem 0;
+}
+
 .statsSub {
   font-size: 0.75rem;
   color: var(--color-text-secondary);

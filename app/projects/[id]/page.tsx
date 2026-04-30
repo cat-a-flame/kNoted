@@ -326,29 +326,30 @@ export default function ProjectPage() {
                 </p>
                 <p className={styles.statsSub}>rows completed</p>
                 <ProgressBar value={done} max={total || 1} />
-              </div>
 
-              {sections.length > 1 && (
-                <div className={styles.statsCard}>
-                  <p className={styles.statsLabel} style={{ marginBottom: '0.75rem' }}>By section</p>
-                  <div className={styles.sectionProgress}>
-                    {sections.map((s) => {
-                      const sRows = s.rows ?? [];
-                      const sDone = sRows.filter((r) => r.done).length;
-                      const sTotal = sRows.length;
-                      return (
-                        <div key={s.id}>
-                          <div className={styles.sectionProgressRow}>
-                            <span className={styles.sectionProgressName}>{s.name}</span>
-                            <span className={styles.sectionProgressCount}>{sDone} / {sTotal}</span>
+                {sections.length > 1 && (
+                  <>
+                    <div className={styles.statsDivider} />
+                    <p className={styles.statsLabel} style={{ marginBottom: '0.75rem' }}>By section</p>
+                    <div className={styles.sectionProgress}>
+                      {sections.map((s) => {
+                        const sRows = s.rows ?? [];
+                        const sDone = sRows.filter((r) => r.done).length;
+                        const sTotal = sRows.length;
+                        return (
+                          <div key={s.id}>
+                            <div className={styles.sectionProgressRow}>
+                              <span className={styles.sectionProgressName}>{s.name}</span>
+                              <span className={styles.sectionProgressCount}>{sDone} / {sTotal}</span>
+                            </div>
+                            <ProgressBar value={sDone} max={sTotal || 1} />
                           </div>
-                          <ProgressBar value={sDone} max={sTotal || 1} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </aside>
           </div>
         </div>

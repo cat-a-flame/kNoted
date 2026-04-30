@@ -64,6 +64,27 @@
   border-bottom-color: var(--color-teal);
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.newBtn {
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background-color: var(--color-teal);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.newBtn:hover {
+  background-color: var(--color-teal-dark);
+}
+
 /* User menu */
 .userMenu {
   position: relative;

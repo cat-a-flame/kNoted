@@ -66,7 +66,12 @@ export function AppHeader() {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/projects" className={styles.brand}>kNoted</Link>
-          <UserMenu />
+          <div className={styles.headerRight}>
+            {pathname !== '/projects/new' && (
+              <Link href="/projects/new" className={styles.newBtn}>+ New project</Link>
+            )}
+            <UserMenu />
+          </div>
         </div>
       </header>
       <nav className={styles.nav}>
