@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Project } from '@/lib/types';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -93,16 +94,19 @@ export default function ProjectsPage() {
 
       <main className={styles.main}>
         <div className={styles.container}>
-          <div className={styles.tabs}>
-            {(['active', 'done', 'archive'] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`}
-              >
-                {t}
-              </button>
-            ))}
+          <div className={styles.tabRow}>
+            <div className={styles.tabs}>
+              {(['active', 'done', 'archive'] as Tab[]).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <Link href="/projects/new" className={styles.newProjectBtn}>+ New project</Link>
           </div>
 
           {loading ? (

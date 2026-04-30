@@ -70,9 +70,6 @@ export function AppHeader() {
         <div className={styles.headerInner}>
           <Link href="/projects" className={styles.brand}>kNoted</Link>
           <div className={styles.headerRight}>
-            {pathname !== '/projects/new' && (
-              <Link href="/projects/new" className={styles.newBtn}>+ New project</Link>
-            )}
             <UserMenu />
           </div>
         </div>
