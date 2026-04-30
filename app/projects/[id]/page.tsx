@@ -224,9 +224,9 @@ export default function ProjectPage() {
       <AppHeader />
 
       <main className={styles.pageMain}>
-        <div className={styles.container}>
-          {/* Page sub-header */}
-          <div className={styles.pageTop}>
+        {/* Sticky title bar */}
+        <div className={styles.pageTop}>
+          <div className={styles.pageTopInner}>
             <div className={styles.titleGroup}>
               {isRenaming ? (
                 <input
@@ -262,7 +262,9 @@ export default function ProjectPage() {
               {editMode ? 'Done editing' : 'Edit'}
             </button>
           </div>
+        </div>
 
+        <div className={styles.container}>
           {/* Two-column body */}
           <div className={styles.twoCol}>
             {/* Left: row list */}

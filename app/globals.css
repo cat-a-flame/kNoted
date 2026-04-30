@@ -33,7 +33,7 @@
 
   /* Layout */
   --header-height: 3.5rem;
-  --nav-height: 2.5rem;
+  --page-top-height: 3.25rem;
 
   /* Typography */
   --font-serif: var(--font-lora), Georgia, serif;
