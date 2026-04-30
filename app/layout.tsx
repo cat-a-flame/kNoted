@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Lora, DM_Sans } from 'next/font/google';
+import { Lora, Figtree } from 'next/font/google';
 import './globals.css';
 
 const lora = Lora({
@@ -8,9 +8,9 @@ const lora = Lora({
   display: 'swap',
 });
 
-const dmSans = DM_Sans({
+const figtree = Figtree({
   subsets: ['latin'],
-  variable: '--font-dm-sans',
+  variable: '--font-figtree',
   display: 'swap',
 });
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${lora.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${lora.variable} ${figtree.variable}`}>
       <body className="font-sans bg-bg text-text-primary antialiased">{children}</body>
     </html>
   );
