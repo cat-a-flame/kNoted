@@ -71,18 +71,6 @@
   min-width: 0;
 }
 
-.rowTitle {
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.375;
-  color: var(--color-text-primary);
-}
-
-.rowTitleDone {
-  text-decoration: line-through;
-  color: var(--color-text-tertiary);
-}
-
 .pillRow {
   display: flex;
   flex-wrap: wrap;
