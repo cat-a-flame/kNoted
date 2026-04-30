@@ -64,7 +64,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   border-radius: var(--radius-sm);
-  background-color: var(--color-coral);
+  background-color: var(--color-danger);
   color: #fff;
   transition: var(--transition-opacity);
 }

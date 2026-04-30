@@ -35,7 +35,7 @@
 .errorMsg {
   margin-top: 0.375rem;
   font-size: 0.75rem;
-  color: var(--color-coral);
+  color: var(--color-danger);
 }
 
 .sectionTitle {
@@ -80,7 +80,7 @@
 }
 
 .removeBtn:hover {
-  color: var(--color-coral);
+  color: var(--color-danger);
 }
 
 .detailGrid {
@@ -102,8 +102,8 @@
   padding: 0.375rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: var(--color-teal-light);
-  color: var(--color-teal-dark);
+  background-color: var(--color-coral-light);
+  color: var(--color-coral-dark);
   border: 1px solid rgba(29, 158, 117, 0.2);
   border-radius: var(--radius-sm);
   transition: background-color 0.15s;
@@ -176,7 +176,7 @@
 }
 
 .deleteRowBtn:hover {
-  color: var(--color-coral);
+  color: var(--color-danger);
 }
 
 /* Add section form */
@@ -200,22 +200,22 @@
 }
 
 .addSectionTrigger:hover {
-  border-color: var(--color-teal);
-  color: var(--color-teal);
+  border-color: var(--color-coral);
+  color: var(--color-coral);
 }
 
 .addSectionBtn {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
   border-radius: var(--radius-sm);
   transition: background-color 0.15s;
 }
 
 .addSectionBtn:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 .cancelBtn {
@@ -236,14 +236,14 @@
   padding: 0.625rem 1.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
   border-radius: var(--radius-sm);
   transition: background-color 0.15s, opacity 0.15s;
 }
 
 .submitBtn:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 .submitBtn:disabled {

@@ -9,8 +9,8 @@
 }
 
 .inProgress {
-  background-color: var(--color-teal-light);
-  color: var(--color-teal-dark);
+  background-color: var(--color-coral-light);
+  color: var(--color-coral-dark);
   border-color: rgba(29, 158, 117, 0.2);
 }
 

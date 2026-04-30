@@ -12,14 +12,14 @@
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
   border-radius: var(--radius-sm);
   transition: background-color 0.15s;
 }
 
 .newBtn:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 .tabs {
@@ -45,8 +45,8 @@
 }
 
 .tabActive {
-  border-bottom-color: var(--color-teal);
-  color: var(--color-teal);
+  border-bottom-color: var(--color-coral);
+  color: var(--color-coral);
 }
 
 .loading {
