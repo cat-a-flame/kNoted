@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Toast } from '@/components/ui/Toast';
 import styles from './page.module.css';
 
-type Tab = 'active' | 'archived';
+type Tab = 'active' | 'done' | 'archive';
 
 type ProjectWithRows = Project & { rows: { done: boolean }[] };
 
@@ -80,7 +80,13 @@ export default function ProjectsPage() {
     setToast({ message: 'Project deleted.', variant: 'success' });
   };
 
-  const filtered = projects.filter((p) => p.archived === (tab === 'archived'));
+  const isAllDone = (p: ProjectWithRows) => p.rows.length > 0 && p.rows.every((r) => r.done);
+
+  const filtered = projects.filter((p) => {
+    if (tab === 'active') return !p.archived && !isAllDone(p);
+    if (tab === 'done') return !p.archived && isAllDone(p);
+    return p.archived;
+  });
 
   return (
     <div className="appShell">
@@ -94,7 +100,7 @@ export default function ProjectsPage() {
 
         <main className="pageMain">
           <div className={styles.tabs}>
-            {(['active', 'archived'] as Tab[]).map((t) => (
+            {(['active', 'done', 'archive'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
