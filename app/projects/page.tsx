@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Project } from '@/lib/types';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { MobileNav } from '@/components/layout/MobileNav';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppFooter } from '@/components/layout/AppFooter';
 import { ProjectGrid } from '@/components/projects/ProjectGrid';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Toast } from '@/components/ui/Toast';
@@ -90,15 +89,10 @@ export default function ProjectsPage() {
 
   return (
     <div className="appShell">
-      <Sidebar />
+      <AppHeader />
 
-      <div className="pageContent">
-        <header className="pageHeader">
-          <h2 className={styles.headerTitle}>Projects</h2>
-          <Link href="/projects/new" className={styles.newBtn}>+ New project</Link>
-        </header>
-
-        <main className="pageMain">
+      <main className={styles.main}>
+        <div className={styles.container}>
           <div className={styles.tabs}>
             {(['active', 'done', 'archive'] as Tab[]).map((t) => (
               <button
@@ -118,10 +112,10 @@ export default function ProjectsPage() {
           ) : (
             <ProjectGrid projects={filtered} onArchive={handleArchive} onDelete={(id) => setDeleteId(id)} />
           )}
-        </main>
-      </div>
+        </div>
+      </main>
 
-      <MobileNav />
+      <AppFooter />
 
       {deleteId && (
         <ConfirmDialog

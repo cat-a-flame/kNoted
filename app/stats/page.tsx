@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Project } from '@/lib/types';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { MobileNav } from '@/components/layout/MobileNav';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppFooter } from '@/components/layout/AppFooter';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import styles from './page.module.css';
 
@@ -106,14 +106,9 @@ export default function StatsPage() {
 
   return (
     <div className="appShell">
-      <Sidebar />
+      <AppHeader />
 
-      <div className="pageContent">
-        <header className="pageHeader">
-          <h2 className={styles.headerTitle}>Statistics</h2>
-        </header>
-
-        <main className={styles.main}>
+      <main className={styles.main}>
           {loading ? (
             <p className={styles.loading}>Loading…</p>
           ) : (
@@ -165,10 +160,9 @@ export default function StatsPage() {
               )}
             </>
           )}
-        </main>
-      </div>
+      </main>
 
-      <MobileNav />
+      <AppFooter />
     </div>
   );
 }
