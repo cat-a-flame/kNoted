@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Row, Stitch } from '@/lib/types';
+import { Row } from '@/lib/types';
 import { RowCard } from './RowCard';
 import { RowEditForm } from './RowEditForm';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -12,7 +12,7 @@ interface RowListProps {
   editMode: boolean;
   firstIncompleteRowId: string | null;
   onToggle: (rowId: string, done: boolean) => Promise<void>;
-  onEdit: (rowId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
+  onEdit: (rowId: string, data: { note: string | null; stitch_count: number | null }) => Promise<void>;
   onDuplicate: (rowId: string) => Promise<void>;
   onDelete: (rowId: string) => Promise<void>;
   onReorder: (rows: Row[]) => Promise<void>;

@@ -22,6 +22,7 @@ export type Row = {
   title: string;
   stitches: Stitch[];
   note: string | null;
+  stitch_count: number | null;
   done: boolean;
 };
 

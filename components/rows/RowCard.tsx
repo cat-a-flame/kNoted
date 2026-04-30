@@ -1,7 +1,6 @@
 'use client';
 
 import { Row } from '@/lib/types';
-import { StitchPill } from './StitchPill';
 import styles from './RowCard.module.css';
 
 interface RowCardProps {
@@ -49,18 +48,14 @@ export function RowCard({
         </div>
       )}
 
-      <div className={`${styles.rowBubble} ${bubbleClass}`}>{index}</div>
+      <div className={`${styles.rowBubble} ${bubbleClass}`}>{index === 0 ? 'B' : index}</div>
 
       <div className={styles.body}>
         <p className={`${styles.rowTitle} ${row.done ? styles.rowTitleDone : ''}`}>
-          {row.title}
+          {index === 0 ? 'Base' : `Row ${index}`}
         </p>
-        {row.stitches.length > 0 && (
-          <div className={styles.pillRow}>
-            {row.stitches.map((stitch, i) => (
-              <StitchPill key={i} stitch={stitch} />
-            ))}
-          </div>
+        {row.stitch_count != null && (
+          <p className={styles.stitchCount}>{row.stitch_count} sts</p>
         )}
         {row.note && <p className={styles.note}>{row.note}</p>}
       </div>

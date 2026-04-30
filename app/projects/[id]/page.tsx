@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { Project, Section, Row, Stitch } from '@/lib/types';
+import { Project, Section, Row } from '@/lib/types';
 import { todayIso } from '@/lib/utils';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
@@ -112,7 +112,7 @@ export default function ProjectPage() {
     );
   }, [id, project]);
 
-  const handleEditRow = useCallback(async (sectionId: string, rowId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => {
+  const handleEditRow = useCallback(async (sectionId: string, rowId: string, data: { note: string | null; stitch_count: number | null }) => {
     const supabase = createClient();
     const { error } = await supabase.from('rows').update(data).eq('id', rowId);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
@@ -134,7 +134,7 @@ export default function ProjectPage() {
     const insertPos = source.position + 1;
     const reindexed = rows.map((r) => r.position >= insertPos ? { ...r, position: r.position + 1 } : r);
     const { data, error } = await supabase.from('rows')
-      .insert({ section_id: sectionId, position: insertPos, title: `${source.title} (copy)`, stitches: source.stitches, note: source.note, done: false })
+      .insert({ section_id: sectionId, position: insertPos, title: source.title, stitches: source.stitches, note: source.note, stitch_count: source.stitch_count, done: false })
       .select('*').single();
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     await Promise.all(reindexed.filter((r) => r.id !== data.id && r.position >= insertPos).map((r) => supabase.from('rows').update({ position: r.position }).eq('id', r.id)));
@@ -156,12 +156,13 @@ export default function ProjectPage() {
     await Promise.all(reordered.map((r) => supabase.from('rows').update({ position: r.position }).eq('id', r.id)));
   }, []);
 
-  const handleAddRow = useCallback(async (sectionId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => {
+  const handleAddRow = useCallback(async (sectionId: string, data: { note: string | null; stitch_count: number | null }) => {
     const supabase = createClient();
     const section = sections.find((s) => s.id === sectionId);
     const rowCount = (section?.rows ?? []).length;
+    const title = rowCount === 0 ? 'Base' : `Row ${rowCount}`;
     const { data: newRow, error } = await supabase.from('rows')
-      .insert({ section_id: sectionId, position: rowCount, title: data.title, stitches: data.stitches, note: data.note, done: false })
+      .insert({ section_id: sectionId, position: rowCount, title, stitches: [], note: data.note, stitch_count: data.stitch_count, done: false })
       .select('*').single();
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     setSections((prev) => prev.map((s) => s.id === sectionId ? { ...s, rows: [...(s.rows ?? []), newRow as Row] } : s));

@@ -1,49 +1,50 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { Row, Stitch } from '@/lib/types';
-import { StitchBuilder } from './StitchBuilder';
+import { Row } from '@/lib/types';
 import { Input } from '@/components/ui/Input';
 import { FormLabel } from '@/components/ui/FormLabel';
 import styles from './RowEditForm.module.css';
 
 interface RowEditFormProps {
   row: Row;
-  onSave: (data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
+  onSave: (data: { note: string | null; stitch_count: number | null }) => Promise<void>;
   onCancel: () => void;
 }
 
 export function RowEditForm({ row, onSave, onCancel }: RowEditFormProps) {
-  const [title, setTitle] = useState(row.title);
-  const [stitches, setStitches] = useState<Stitch[]>(row.stitches);
   const [note, setNote] = useState(row.note ?? '');
+  const [stitchCount, setStitchCount] = useState(row.stitch_count != null ? String(row.stitch_count) : '');
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await onSave({ title: title.trim() || row.title, stitches, note: note.trim() || null });
+    const parsed = stitchCount.trim() ? parseInt(stitchCount, 10) : null;
+    const validCount = parsed !== null && !isNaN(parsed) ? parsed : null;
+    await onSave({ note: note.trim() || null, stitch_count: validCount });
     setSaving(false);
   };
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div>
-        <FormLabel>Row name</FormLabel>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <FormLabel>Total stitches</FormLabel>
+        <Input
+          type="number"
+          min="0"
+          value={stitchCount}
+          onChange={(e) => setStitchCount(e.target.value)}
+          placeholder="e.g. 24"
+        />
       </div>
 
       <div>
-        <FormLabel>Stitches</FormLabel>
-        <StitchBuilder stitches={stitches} onChange={setStitches} />
-      </div>
-
-      <div>
-        <FormLabel>Note (optional)</FormLabel>
+        <FormLabel>Details (optional)</FormLabel>
         <Input
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Add a note…"
+          placeholder="Add details…"
         />
       </div>
 

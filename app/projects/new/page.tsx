@@ -4,17 +4,14 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Stitch } from '@/lib/types';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
-import { StitchBuilder } from '@/components/rows/StitchBuilder';
-import { StitchPill } from '@/components/rows/StitchPill';
 import { Input } from '@/components/ui/Input';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { Toast } from '@/components/ui/Toast';
 import styles from './page.module.css';
 
-type DraftRow = { title: string; stitches: Stitch[]; note: string };
+type DraftRow = { title: string; note: string; stitch_count: number | null };
 
 type DraftSection = {
   id: string;
@@ -24,9 +21,8 @@ type DraftSection = {
   yarn_colour: string;
   hook_size: string;
   rows: DraftRow[];
-  builderTitle: string;
-  builderStitches: Stitch[];
   builderNote: string;
+  builderStitchCount: string;
 };
 
 let _id = 0;
@@ -53,7 +49,7 @@ export default function NewProjectPage() {
     if (!trimmed) return;
     setSections((prev) => [
       ...prev,
-      { id: genId(), name: trimmed, yarn_name: '', yarn_weight: '', yarn_colour: '', hook_size: '', rows: [], builderTitle: '', builderStitches: [], builderNote: '' },
+      { id: genId(), name: trimmed, yarn_name: '', yarn_weight: '', yarn_colour: '', hook_size: '', rows: [], builderNote: '', builderStitchCount: '' },
     ]);
     setAddingSectionName('');
     setShowAddSection(false);
@@ -63,8 +59,11 @@ export default function NewProjectPage() {
     setSections((prev) =>
       prev.map((s) => {
         if (s.id !== sectionId) return s;
-        const title = s.builderTitle.trim() || `Row ${s.rows.length}`;
-        return { ...s, rows: [...s.rows, { title, stitches: s.builderStitches, note: s.builderNote.trim() }], builderTitle: '', builderStitches: [], builderNote: '' };
+        const rowIndex = s.rows.length;
+        const title = rowIndex === 0 ? 'Base' : `Row ${rowIndex}`;
+        const parsed = s.builderStitchCount.trim() ? parseInt(s.builderStitchCount, 10) : null;
+        const stitch_count = parsed !== null && !isNaN(parsed) ? parsed : null;
+        return { ...s, rows: [...s.rows, { title, note: s.builderNote.trim(), stitch_count }], builderNote: '', builderStitchCount: '' };
       }),
     );
   };
@@ -102,7 +101,7 @@ export default function NewProjectPage() {
 
       if (sec.rows.length > 0) {
         const { error: rowsError } = await supabase.from('rows').insert(
-          sec.rows.map((row, ri) => ({ section_id: sectionData.id, position: ri, title: row.title, stitches: row.stitches, note: row.note || null, done: false })),
+          sec.rows.map((row, ri) => ({ section_id: sectionData.id, position: ri, title: row.title, stitches: [], note: row.note || null, stitch_count: row.stitch_count, done: false })),
         );
         if (rowsError) { setToast({ message: rowsError.message, variant: 'error' }); setSaving(false); return; }
       }
@@ -163,16 +162,12 @@ export default function NewProjectPage() {
 
                     <div className={styles.rowBuilder}>
                       <div>
-                        <FormLabel>Row name</FormLabel>
-                        <Input value={section.builderTitle} onChange={(e) => updateSection(section.id, { builderTitle: e.target.value })} placeholder={`Row ${section.rows.length}`} />
+                        <FormLabel>Total stitches</FormLabel>
+                        <Input type="number" min="0" value={section.builderStitchCount} onChange={(e) => updateSection(section.id, { builderStitchCount: e.target.value })} placeholder="e.g. 24" />
                       </div>
                       <div>
-                        <FormLabel>Stitches</FormLabel>
-                        <StitchBuilder stitches={section.builderStitches} onChange={(stitches) => updateSection(section.id, { builderStitches: stitches })} />
-                      </div>
-                      <div>
-                        <FormLabel>Note (optional)</FormLabel>
-                        <Input value={section.builderNote} onChange={(e) => updateSection(section.id, { builderNote: e.target.value })} placeholder="Add a note…" />
+                        <FormLabel>Details (optional)</FormLabel>
+                        <Input value={section.builderNote} onChange={(e) => updateSection(section.id, { builderNote: e.target.value })} placeholder="Add details…" />
                       </div>
                       <button type="button" onClick={() => addRowToSection(section.id)} className={styles.addRowToSection}>
                         + Add row to {section.name}
@@ -183,14 +178,10 @@ export default function NewProjectPage() {
                       <div className={styles.rowList}>
                         {section.rows.map((row, ri) => (
                           <div key={ri} className={styles.rowItem}>
-                            <div className={styles.rowBubble}>{ri}</div>
+                            <div className={styles.rowBubble}>{ri === 0 ? 'B' : ri}</div>
                             <div className={styles.rowBody}>
                               <p className={styles.rowTitle}>{row.title}</p>
-                              {row.stitches.length > 0 && (
-                                <div className={styles.rowPills}>
-                                  {row.stitches.map((s, si) => <StitchPill key={si} stitch={s} />)}
-                                </div>
-                              )}
+                              {row.stitch_count != null && <p className={styles.rowNote}>{row.stitch_count} sts</p>}
                               {row.note && <p className={styles.rowNote}>{row.note}</p>}
                             </div>
                             <button type="button" onClick={() => removeRow(section.id, ri)} className={styles.deleteRowBtn} aria-label="Remove row">
