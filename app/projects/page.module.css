@@ -8,11 +8,33 @@
   padding: 1.5rem;
 }
 
+.tabRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
 .tabs {
   display: flex;
   gap: 0.25rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1.5rem;
+}
+
+.newProjectBtn {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background-color: var(--color-coral);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  margin-bottom: 0.5rem;
+  transition: background-color 0.15s;
+}
+
+.newProjectBtn:hover {
+  background-color: var(--color-coral-dark);
 }
 
 .tab {

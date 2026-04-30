@@ -26,6 +26,7 @@ export default function ProjectPage() {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+  const [stitchCount, setStitchCount] = useState(0);
 
   const didScrollRef = useRef(false);
 
@@ -342,6 +343,39 @@ export default function ProjectPage() {
                     </div>
                   </>
                 )}
+              </div>
+
+              <div className={styles.stitchCard}>
+                <p className={styles.statsLabel}>Stitch counter</p>
+                <input
+                  type="number"
+                  min="0"
+                  value={stitchCount}
+                  onChange={(e) => {
+                    const n = parseInt(e.target.value, 10);
+                    setStitchCount(isNaN(n) || n < 0 ? 0 : n);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowUp') { e.preventDefault(); setStitchCount((n) => n + 1); }
+                    if (e.key === 'ArrowDown') { e.preventDefault(); setStitchCount((n) => Math.max(0, n - 1)); }
+                  }}
+                  className={styles.stitchInput}
+                />
+                <div className={styles.stitchBtns}>
+                  <button
+                    onClick={() => setStitchCount((n) => Math.max(0, n - 1))}
+                    className={styles.stitchBtn}
+                    aria-label="Decrease"
+                  >−</button>
+                  <button
+                    onClick={() => setStitchCount((n) => n + 1)}
+                    className={styles.stitchBtn}
+                    aria-label="Increase"
+                  >+</button>
+                </div>
+                <button onClick={() => setStitchCount(0)} className={styles.stitchReset}>
+                  Reset
+                </button>
               </div>
             </aside>
           </div>

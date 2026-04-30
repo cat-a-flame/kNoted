@@ -68,7 +68,7 @@ export function RowList({
           <div
             key={row.id}
             id={`row-${row.id}`}
-            draggable={editMode}
+            draggable={editMode && editingId !== row.id}
             onDragStart={() => handleDragStart(row.id)}
             onDragOver={(e) => handleDragOver(e, row.id)}
             onDrop={(e) => handleDrop(e, row.id)}
