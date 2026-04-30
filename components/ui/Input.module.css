@@ -23,3 +23,9 @@
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
 }
+
+.input:disabled {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+}

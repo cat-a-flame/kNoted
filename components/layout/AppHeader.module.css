@@ -140,6 +140,22 @@
   white-space: nowrap;
 }
 
+.dropdownItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  transition: var(--transition-colors);
+  border-bottom: 1px solid var(--border);
+}
+
+.dropdownItem:hover {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+
 .signOutItem {
   display: block;
   width: 100%;

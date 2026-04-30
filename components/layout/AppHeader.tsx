@@ -51,6 +51,9 @@ function UserMenu() {
       {open && (
         <div className={styles.dropdown}>
           {email && <p className={styles.dropdownEmail}>{email}</p>}
+          <Link href="/account" className={styles.dropdownItem} onClick={() => setOpen(false)}>
+            Account settings
+          </Link>
           <button onClick={handleSignOut} className={styles.signOutItem}>Sign out</button>
         </div>
       )}
