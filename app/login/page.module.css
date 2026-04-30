@@ -70,8 +70,8 @@
   background-color: var(--color-coral);
   color: #fff;
   border-radius: var(--radius-sm);
-  padding: 0.5rem;
-  font-size: 0.875rem;
+  padding: 1rem 0.5rem;
+  font-size: 1rem;
   font-weight: 500;
   transition: background-color 0.15s, opacity 0.15s;
 }

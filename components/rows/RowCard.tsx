@@ -48,7 +48,7 @@ export function RowCard({
         </div>
       )}
 
-      <div className={`${styles.rowBubble} ${bubbleClass}`}>{index === 0 ? 'B' : index}</div>
+      <div className={`${styles.rowBubble} ${bubbleClass}`}>{index === 0 ? 'B' : index}.</div>
 
       <div className={styles.body}>
         <p className={`${styles.rowTitle} ${row.done ? styles.rowTitleDone : ''}`}>

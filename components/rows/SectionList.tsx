@@ -181,7 +181,7 @@ export function SectionList({
         const detail = detailText(section);
 
         return (
-          <div key={section.id}>
+          <div key={section.id} className={styles.item}>
             {showHeaders && (
               <>
                 <div className={styles.sectionHeader}>
@@ -214,8 +214,6 @@ export function SectionList({
                   ) : (
                     <span className={styles.sectionName}>{section.name}</span>
                   )}
-
-                  <span className={styles.rowCount}>{doneCnt} / {rows.length}</span>
 
                   {allDone && (
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"

@@ -2,10 +2,10 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  height: var(--header-height);
-  background-color: rgba(247, 244, 239, 0.95);
+  background-color: #fff;
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
+  padding: 1rem;
 }
 
 .headerInner {
@@ -71,18 +71,18 @@
 }
 
 .newBtn {
-  padding: 0.4375rem 0.875rem;
-  font-size: 0.8125rem;
+  padding: .75rem 1.25rem;
+  font-size: 1rem;
   font-weight: 500;
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   white-space: nowrap;
   transition: background-color 0.15s;
 }
 
 .newBtn:hover {
-  background-color: var(--color-teal-dark);
+  background-color: var(--color-coral-dark);
 }
 
 /* User menu */
@@ -108,7 +108,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: 9999px;
-  background-color: var(--color-teal);
+  background-color: var(--color-coral);
   color: #fff;
   font-size: 0.8125rem;
   font-weight: 600;
