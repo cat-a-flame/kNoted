@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Section, Row, Stitch } from '@/lib/types';
+import { Section, Row } from '@/lib/types';
 import { RowList } from './RowList';
-import { StitchBuilder } from './StitchBuilder';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Input } from '@/components/ui/Input';
 import { FormLabel } from '@/components/ui/FormLabel';
@@ -22,11 +21,11 @@ interface SectionListProps {
   editMode: boolean;
   firstIncompleteRowId: string | null;
   onToggleRow: (sectionId: string, rowId: string, done: boolean) => Promise<void>;
-  onEditRow: (sectionId: string, rowId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
+  onEditRow: (sectionId: string, rowId: string, data: { note: string | null; stitch_count: number | null }) => Promise<void>;
   onDuplicateRow: (sectionId: string, rowId: string) => Promise<void>;
   onDeleteRow: (sectionId: string, rowId: string) => Promise<void>;
   onReorderRows: (sectionId: string, rows: Row[]) => Promise<void>;
-  onAddRow: (sectionId: string, data: { title: string; stitches: Stitch[]; note: string | null }) => Promise<void>;
+  onAddRow: (sectionId: string, data: { note: string | null; stitch_count: number | null }) => Promise<void>;
   onUpdateSection: (sectionId: string, updates: SectionUpdate) => Promise<void>;
   onDeleteSection: (sectionId: string) => Promise<void>;
   onAddSection: (name: string) => Promise<void>;
@@ -111,9 +110,8 @@ export function SectionList({
 
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [addingRowTo, setAddingRowTo] = useState<string | null>(null);
-  const [rowTitle, setRowTitle] = useState('');
-  const [rowStitches, setRowStitches] = useState<Stitch[]>([]);
   const [rowNote, setRowNote] = useState('');
+  const [rowStitchCount, setRowStitchCount] = useState('');
 
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -150,21 +148,17 @@ export function SectionList({
 
   const openAddRow = (sectionId: string) => {
     setAddingRowTo(sectionId);
-    setRowTitle('');
-    setRowStitches([]);
     setRowNote('');
+    setRowStitchCount('');
   };
 
-  const submitAddRow = async (sectionId: string, rowCount: number) => {
-    await onAddRow(sectionId, {
-      title: rowTitle.trim() || `Row ${rowCount}`,
-      stitches: rowStitches,
-      note: rowNote.trim() || null,
-    });
+  const submitAddRow = async (sectionId: string) => {
+    const parsed = rowStitchCount.trim() ? parseInt(rowStitchCount, 10) : null;
+    const validCount = parsed !== null && !isNaN(parsed) ? parsed : null;
+    await onAddRow(sectionId, { note: rowNote.trim() || null, stitch_count: validCount });
     setAddingRowTo(null);
-    setRowTitle('');
-    setRowStitches([]);
     setRowNote('');
+    setRowStitchCount('');
   };
 
   const submitAddSection = async () => {
@@ -285,18 +279,19 @@ export function SectionList({
                     <div className={styles.addRowForm}>
                       <Input
                         autoFocus
-                        value={rowTitle}
-                        onChange={(e) => setRowTitle(e.target.value)}
-                        placeholder={`Row ${rows.length}`}
+                        type="number"
+                        min="0"
+                        value={rowStitchCount}
+                        onChange={(e) => setRowStitchCount(e.target.value)}
+                        placeholder="Total stitches (optional)"
                       />
-                      <StitchBuilder stitches={rowStitches} onChange={setRowStitches} />
                       <Input
                         value={rowNote}
                         onChange={(e) => setRowNote(e.target.value)}
-                        placeholder="Note (optional)"
+                        placeholder="Details (optional)"
                       />
                       <div className={styles.addRowActions}>
-                        <button onClick={() => submitAddRow(section.id, rows.length)} className={styles.addRowBtn}>
+                        <button onClick={() => submitAddRow(section.id)} className={styles.addRowBtn}>
                           Add row
                         </button>
                         <button onClick={() => setAddingRowTo(null)} className={styles.cancelBtn}>
