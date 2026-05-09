@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
@@ -23,12 +23,23 @@ export default function ProjectPage() {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
-  const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
   const [stitchCount, setStitchCount] = useState(0);
 
+  const router = useRouter();
   const didScrollRef = useRef(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handle = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [menuOpen]);
 
   useEffect(() => {
     const load = async () => {
@@ -59,14 +70,62 @@ export default function ProjectPage() {
 
   const submitRename = useCallback(async () => {
     const trimmed = renameValue.trim();
-    if (!trimmed || trimmed === project?.name) { setIsRenaming(false); return; }
-    const supabase = createClient();
-    const { error } = await supabase.from('projects').update({ name: trimmed }).eq('id', id);
-    if (error) { setToast({ message: error.message, variant: 'error' }); setIsRenaming(false); return; }
+    if (!trimmed || trimmed === project?.name) return;
+    const { error } = await createClient().from('projects').update({ name: trimmed }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     setProject((prev) => (prev ? { ...prev, name: trimmed } : prev));
-    setIsRenaming(false);
-    setToast({ message: 'Project renamed.', variant: 'success' });
   }, [id, renameValue, project?.name]);
+
+  const handleToggleEditMode = useCallback(async () => {
+    if (editMode) {
+      await submitRename();
+      setEditMode(false);
+    } else {
+      setRenameValue(project?.name ?? '');
+      setEditMode(true);
+    }
+  }, [editMode, project?.name, submitRename]);
+
+  const handleArchiveProject = useCallback(async () => {
+    if (!project) return;
+    setMenuOpen(false);
+    const nextArchived = !project.archived;
+    const { error } = await createClient().from('projects').update({ archived: nextArchived }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    setProject((prev) => prev ? { ...prev, archived: nextArchived } : prev);
+    setToast({ message: nextArchived ? 'Project archived.' : 'Project unarchived.', variant: 'success' });
+  }, [id, project]);
+
+  const handleDuplicate = useCallback(async () => {
+    if (!project) return;
+    setMenuOpen(false);
+    const supabase = createClient();
+    const { data: newProject, error: pErr } = await supabase
+      .from('projects')
+      .insert({ name: `${project.name} (copy)`, archived: false, activity: [], cover_url: project.cover_url })
+      .select('*').single();
+    if (pErr) { setToast({ message: pErr.message, variant: 'error' }); return; }
+    for (const section of sections) {
+      const { data: newSection, error: sErr } = await supabase
+        .from('sections')
+        .insert({ project_id: newProject.id, position: section.position, name: section.name, yarn_name: section.yarn_name, yarn_weight: section.yarn_weight, yarn_colour: section.yarn_colour, hook_size: section.hook_size })
+        .select('*').single();
+      if (sErr || !newSection) continue;
+      const rows = section.rows ?? [];
+      if (rows.length > 0) {
+        await supabase.from('rows').insert(rows.map((r) => ({ section_id: newSection.id, position: r.position, title: r.title, note: r.note, stitch_count: r.stitch_count, done: false })));
+      }
+    }
+    setToast({ message: 'Project duplicated.', variant: 'success' });
+  }, [project, sections]);
+
+  const handleMoveTobin = useCallback(async () => {
+    if (!project) return;
+    setMenuOpen(false);
+    const { error } = await createClient().from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    router.push('/projects');
+  }, [id, project, router]);
 
   const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -228,35 +287,48 @@ export default function ProjectPage() {
         <div className={styles.pageTop}>
           <div className={styles.pageTopInner}>
             <div className={styles.titleGroup}>
-              {isRenaming ? (
+              {editMode ? (
                 <input
                   autoFocus
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') submitRename();
-                    if (e.key === 'Escape') setIsRenaming(false);
+                    if (e.key === 'Escape') setRenameValue(project.name);
                   }}
                   className={styles.renameInput}
                 />
               ) : (
-                <>
-                  <h1 className={styles.titleText}>{project.name}</h1>
-                  <button
-                    onClick={() => { setIsRenaming(true); setRenameValue(project.name); }}
-                    className={styles.renameBtn}
-                    title="Rename project"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M11.5 2.5a2.12 2.12 0 0 1 3 3L5 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
+                <h1 className={styles.titleText}>{project.name}</h1>
+              )}
+            </div>
+
+            <div ref={menuRef} className={styles.menuWrap}>
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnActive : ''}`}
+                aria-label="Project options"
+              >
+                •••
+              </button>
+              {menuOpen && (
+                <div className={styles.menuDropdown}>
+                  <button onClick={handleArchiveProject} className={styles.menuItem}>
+                    {project.archived ? 'Unarchive' : 'Archive'}
                   </button>
-                </>
+                  <button onClick={handleDuplicate} className={styles.menuItem}>
+                    Duplicate
+                  </button>
+                  <div className={styles.menuDivider} />
+                  <button onClick={handleMoveTobin} className={`${styles.menuItem} ${styles.menuItemDanger}`}>
+                    Move to bin
+                  </button>
+                </div>
               )}
             </div>
 
             <button
-              onClick={() => setEditMode((v) => !v)}
+              onClick={handleToggleEditMode}
               className={`${styles.editToggle} ${editMode ? styles.editToggleActive : ''}`}
             >
               {editMode ? 'Done editing' : 'Edit'}

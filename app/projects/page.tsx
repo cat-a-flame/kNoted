@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Toast } from '@/components/ui/Toast';
 import styles from './page.module.css';
 
-type Tab = 'active' | 'done' | 'archive';
+type Tab = 'active' | 'done' | 'archive' | 'bin';
 
 type ProjectWithRows = Project & { rows: { done: boolean }[] };
 
@@ -19,7 +19,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectWithRows[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('active');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -70,19 +70,32 @@ export default function ProjectsPage() {
     setToast({ message: archived ? 'Project archived.' : 'Project unarchived.', variant: 'success' });
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    const supabase = createClient();
-    const { error } = await supabase.from('projects').delete().eq('id', deleteId);
-    if (error) { setToast({ message: error.message, variant: 'error' }); setDeleteId(null); return; }
-    setProjects((prev) => prev.filter((p) => p.id !== deleteId));
-    setDeleteId(null);
-    setToast({ message: 'Project deleted.', variant: 'success' });
+  const handleRestore = async (id: string) => {
+    const { error } = await createClient().from('projects').update({ deleted_at: null }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    setProjects((prev) => prev.map((p) => p.id === id ? { ...p, deleted_at: null } : p));
+    setToast({ message: 'Project restored.', variant: 'success' });
+  };
+
+  const handlePermanentDelete = async () => {
+    if (!permanentDeleteId) return;
+    const { error } = await createClient().from('projects').delete().eq('id', permanentDeleteId);
+    if (error) { setToast({ message: error.message, variant: 'error' }); setPermanentDeleteId(null); return; }
+    setProjects((prev) => prev.filter((p) => p.id !== permanentDeleteId));
+    setPermanentDeleteId(null);
+    setToast({ message: 'Project permanently deleted.', variant: 'success' });
+  };
+
+  const daysRemaining = (deletedAt: string) => {
+    const expiry = new Date(new Date(deletedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
+    return Math.max(0, Math.ceil((expiry.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
   };
 
   const isAllDone = (p: ProjectWithRows) => p.rows.length > 0 && p.rows.every((r) => r.done);
 
   const filtered = projects.filter((p) => {
+    if (p.deleted_at) return tab === 'bin';
+    if (tab === 'bin') return false;
     if (tab === 'active') return !p.archived && !isAllDone(p);
     if (tab === 'done') return !p.archived && isAllDone(p);
     return p.archived;
@@ -96,7 +109,7 @@ export default function ProjectsPage() {
         <div className={styles.container}>
           <div className={styles.tabRow}>
             <div className={styles.tabs}>
-              {(['active', 'done', 'archive'] as Tab[]).map((t) => (
+              {(['active', 'done', 'archive', 'bin'] as Tab[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
@@ -113,20 +126,39 @@ export default function ProjectsPage() {
             <div className={styles.loading}>
               <p>Loading projects…</p>
             </div>
+          ) : tab === 'bin' ? (
+            filtered.length === 0 ? (
+              <p className={styles.loading}>The bin is empty.</p>
+            ) : (
+              <div className={styles.binList}>
+                {filtered.map((p) => (
+                  <div key={p.id} className={styles.binItem}>
+                    <div className={styles.binInfo}>
+                      <p className={styles.binName}>{p.name}</p>
+                      <p className={styles.binExpiry}>{daysRemaining(p.deleted_at!)} days until permanent deletion</p>
+                    </div>
+                    <div className={styles.binActions}>
+                      <button onClick={() => handleRestore(p.id)} className={styles.binRestoreBtn}>Restore</button>
+                      <button onClick={() => setPermanentDeleteId(p.id)} className={styles.binDeleteBtn}>Delete permanently</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           ) : (
-            <ProjectGrid projects={filtered} onArchive={handleArchive} onDelete={(id) => setDeleteId(id)} />
+            <ProjectGrid projects={filtered} onArchive={handleArchive} onDelete={(id) => setPermanentDeleteId(id)} />
           )}
         </div>
       </main>
 
       <AppFooter />
 
-      {deleteId && (
+      {permanentDeleteId && (
         <ConfirmDialog
-          title="Delete project"
+          title="Delete permanently"
           description="This will permanently delete the project and all its rows. This cannot be undone."
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteId(null)}
+          onConfirm={handlePermanentDelete}
+          onCancel={() => setPermanentDeleteId(null)}
         />
       )}
 

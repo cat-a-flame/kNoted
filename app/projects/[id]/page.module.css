@@ -41,10 +41,6 @@
   min-width: 0;
 }
 
-.titleGroup:hover .renameBtn {
-  opacity: 1;
-}
-
 .titleText {
   font-family: var(--font-serif);
   font-size: 2rem;
@@ -68,15 +64,64 @@
   flex: 1;
 }
 
-.renameBtn {
-  opacity: 0;
+.menuWrap {
+  position: relative;
   flex-shrink: 0;
-  color: var(--color-text-tertiary);
-  transition: opacity 0.15s, color 0.15s;
 }
 
-.renameBtn:hover {
+.menuBtn {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
   color: var(--color-text-secondary);
+  transition: var(--transition-colors);
+}
+
+.menuBtn:hover,
+.menuBtnActive {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+
+.menuDropdown {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 11rem;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  transition: var(--transition-colors);
+}
+
+.menuItem:hover {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+
+.menuItemDanger:hover {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.menuDivider {
+  height: 1px;
+  background-color: var(--border);
+  margin: 0.25rem 0;
 }
 
 .editToggle {
