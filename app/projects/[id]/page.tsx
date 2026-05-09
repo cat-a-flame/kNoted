@@ -87,6 +87,10 @@ export default function ProjectPage() {
     }
   }, [editMode, project?.name, submitRename]);
 
+  const handleCancelEdit = useCallback(() => {
+    setEditMode(false);
+  }, []);
+
   const handleArchiveProject = useCallback(async (forceArchived?: boolean) => {
     if (!project) return;
     setMenuOpen(false);
@@ -346,6 +350,11 @@ export default function ProjectPage() {
               </div>
             )}
 
+            {editMode && (
+              <button onClick={handleCancelEdit} className={styles.cancelEditBtn}>
+                Cancel
+              </button>
+            )}
             <button
               onClick={handleToggleEditMode}
               disabled={isDeleted}
