@@ -25,7 +25,7 @@ export default function ProjectPage() {
   const [coverUploading, setCoverUploading] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error'; onUndo?: () => void } | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error'; onUndo?: () => void; onDismiss?: () => void } | null>(null);
   const [stitchCount, setStitchCount] = useState(0);
 
   const router = useRouter();
@@ -128,7 +128,17 @@ export default function ProjectPage() {
     setMenuOpen(false);
     const { error } = await createClient().from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
-    router.push('/projects');
+    let undone = false;
+    setToast({
+      message: 'Project moved to bin.',
+      variant: 'success',
+      onUndo: async () => {
+        undone = true;
+        await createClient().from('projects').update({ deleted_at: null }).eq('id', id);
+        setProject((prev) => (prev ? { ...prev, deleted_at: null } : prev));
+      },
+      onDismiss: () => { if (!undone) router.push('/projects'); },
+    });
   }, [id, project, router]);
 
   const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,6 +247,7 @@ export default function ProjectPage() {
     const { error } = await supabase.from('sections').update(updates).eq('id', sectionId);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, ...updates } : s)));
+    setToast({ message: 'Changes saved.', variant: 'success' });
   }, []);
 
   const handleDeleteSection = useCallback(async (sectionId: string) => {
@@ -462,7 +473,7 @@ export default function ProjectPage() {
 
       <AppFooter />
 
-      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} onUndo={toast.onUndo} />}
+      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => { const cb = toast.onDismiss; setToast(null); cb?.(); }} onUndo={toast.onUndo} />}
     </div>
   );
 }
