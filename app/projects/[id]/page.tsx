@@ -67,18 +67,20 @@ export default function ProjectPage() {
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); didScrollRef.current = true; }
   }, [loading, firstIncompleteRowId]);
 
-  const submitRename = useCallback(async () => {
+  const submitRename = useCallback(async (): Promise<boolean> => {
     const trimmed = renameValue.trim();
-    if (!trimmed || trimmed === project?.name) return;
+    if (!trimmed || trimmed === project?.name) return true;
     const { error } = await createClient().from('projects').update({ name: trimmed }).eq('id', id);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    if (error) { setToast({ message: error.message, variant: 'error' }); return false; }
     setProject((prev) => (prev ? { ...prev, name: trimmed } : prev));
+    return true;
   }, [id, renameValue, project?.name]);
 
   const handleToggleEditMode = useCallback(async () => {
     if (editMode) {
-      await submitRename();
+      const ok = await submitRename();
       setEditMode(false);
+      if (ok) setToast({ message: 'Changes saved.', variant: 'success' });
     } else {
       setRenameValue(project?.name ?? '');
       setEditMode(true);
@@ -161,7 +163,6 @@ export default function ProjectPage() {
     const supabase = createClient();
     await supabase.from('projects').update({ cover_url: null }).eq('id', id);
     setProject((prev) => (prev ? { ...prev, cover_url: null } : prev));
-    setToast({ message: 'Cover image removed.', variant: 'success' });
   }, [id]);
 
   const handleToggleRow = useCallback(async (sectionId: string, rowId: string, nextDone: boolean) => {
@@ -359,7 +360,7 @@ export default function ProjectPage() {
           {/* Two-column body */}
           <div className={styles.twoCol}>
             {/* Left: row list */}
-            <div className={styles.rowsCol}>
+            <div className={`${styles.rowsCol} ${isDeleted ? styles.rowsColDisabled : ''}`}>
               {sections.length === 0 ? (
                 <p className={styles.emptyState}>
                   No rows yet.{' '}

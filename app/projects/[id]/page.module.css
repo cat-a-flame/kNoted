@@ -182,6 +182,11 @@
   min-width: 0;
 }
 
+.rowsColDisabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .emptyState {
   padding: 2rem 0;
   text-align: center;
