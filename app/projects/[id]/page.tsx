@@ -23,12 +23,22 @@ export default function ProjectPage() {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
-  const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
-  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error'; onUndo?: () => void } | null>(null);
   const [stitchCount, setStitchCount] = useState(0);
 
   const didScrollRef = useRef(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handle = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [menuOpen]);
 
   useEffect(() => {
     const load = async () => {
@@ -57,16 +67,83 @@ export default function ProjectPage() {
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); didScrollRef.current = true; }
   }, [loading, firstIncompleteRowId]);
 
-  const submitRename = useCallback(async () => {
+  const submitRename = useCallback(async (): Promise<boolean> => {
     const trimmed = renameValue.trim();
-    if (!trimmed || trimmed === project?.name) { setIsRenaming(false); return; }
-    const supabase = createClient();
-    const { error } = await supabase.from('projects').update({ name: trimmed }).eq('id', id);
-    if (error) { setToast({ message: error.message, variant: 'error' }); setIsRenaming(false); return; }
+    if (!trimmed || trimmed === project?.name) return true;
+    const { error } = await createClient().from('projects').update({ name: trimmed }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); return false; }
     setProject((prev) => (prev ? { ...prev, name: trimmed } : prev));
-    setIsRenaming(false);
-    setToast({ message: 'Project renamed.', variant: 'success' });
+    return true;
   }, [id, renameValue, project?.name]);
+
+  const handleToggleEditMode = useCallback(async () => {
+    if (editMode) {
+      const ok = await submitRename();
+      setEditMode(false);
+      if (ok) setToast({ message: 'Changes saved.', variant: 'success' });
+    } else {
+      setRenameValue(project?.name ?? '');
+      setEditMode(true);
+    }
+  }, [editMode, project?.name, submitRename]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditMode(false);
+  }, []);
+
+  const handleArchiveProject = useCallback(async (forceArchived?: boolean) => {
+    if (!project) return;
+    setMenuOpen(false);
+    const nextArchived = forceArchived !== undefined ? forceArchived : !project.archived;
+    const { error } = await createClient().from('projects').update({ archived: nextArchived }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    setProject((prev) => prev ? { ...prev, archived: nextArchived } : prev);
+    setToast({
+      message: nextArchived ? 'Project archived.' : 'Project unarchived.',
+      variant: 'success',
+      onUndo: () => handleArchiveProject(!nextArchived),
+    });
+  }, [id, project]);
+
+  const handleDuplicate = useCallback(async () => {
+    if (!project) return;
+    setMenuOpen(false);
+    const supabase = createClient();
+    const { data: newProject, error: pErr } = await supabase
+      .from('projects')
+      .insert({ name: `${project.name} (copy)`, archived: false, activity: [], cover_url: project.cover_url })
+      .select('*').single();
+    if (pErr) { setToast({ message: pErr.message, variant: 'error' }); return; }
+    for (const section of sections) {
+      const { data: newSection, error: sErr } = await supabase
+        .from('sections')
+        .insert({ project_id: newProject.id, position: section.position, name: section.name, yarn_name: section.yarn_name, yarn_weight: section.yarn_weight, yarn_colour: section.yarn_colour, hook_size: section.hook_size })
+        .select('*').single();
+      if (sErr || !newSection) continue;
+      const rows = section.rows ?? [];
+      if (rows.length > 0) {
+        await supabase.from('rows').insert(rows.map((r) => ({ section_id: newSection.id, position: r.position, title: r.title, note: r.note, stitch_count: r.stitch_count, done: false })));
+      }
+    }
+    setToast({ message: 'Project duplicated.', variant: 'success' });
+  }, [project, sections]);
+
+  const handleMoveTobin = useCallback(async () => {
+    if (!project) return;
+    setMenuOpen(false);
+    const deletedAt = new Date().toISOString();
+    const { error } = await createClient().from('projects').update({ deleted_at: deletedAt }).eq('id', id);
+    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    setProject((prev) => (prev ? { ...prev, deleted_at: deletedAt } : prev));
+    setToast({
+      message: 'Project moved to bin.',
+      variant: 'success',
+      onUndo: async () => {
+        await createClient().from('projects').update({ deleted_at: null }).eq('id', id);
+        setProject((prev) => (prev ? { ...prev, deleted_at: null } : prev));
+      },
+    });
+  }, [id, project]);
 
   const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,7 +167,6 @@ export default function ProjectPage() {
     const supabase = createClient();
     await supabase.from('projects').update({ cover_url: null }).eq('id', id);
     setProject((prev) => (prev ? { ...prev, cover_url: null } : prev));
-    setToast({ message: 'Cover image removed.', variant: 'success' });
   }, [id]);
 
   const handleToggleRow = useCallback(async (sectionId: string, rowId: string, nextDone: boolean) => {
@@ -174,6 +250,7 @@ export default function ProjectPage() {
     const { error } = await supabase.from('sections').update(updates).eq('id', sectionId);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, ...updates } : s)));
+    setToast({ message: 'Changes saved.', variant: 'success' });
   }, []);
 
   const handleDeleteSection = useCallback(async (sectionId: string) => {
@@ -219,6 +296,8 @@ export default function ProjectPage() {
     );
   }
 
+  const isDeleted = !!project.deleted_at;
+
   return (
     <div className="appShell">
       <AppHeader />
@@ -228,35 +307,57 @@ export default function ProjectPage() {
         <div className={styles.pageTop}>
           <div className={styles.pageTopInner}>
             <div className={styles.titleGroup}>
-              {isRenaming ? (
+              {editMode ? (
                 <input
                   autoFocus
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') submitRename();
-                    if (e.key === 'Escape') setIsRenaming(false);
+                    if (e.key === 'Escape') setRenameValue(project.name);
                   }}
                   className={styles.renameInput}
                 />
               ) : (
-                <>
-                  <h1 className={styles.titleText}>{project.name}</h1>
-                  <button
-                    onClick={() => { setIsRenaming(true); setRenameValue(project.name); }}
-                    className={styles.renameBtn}
-                    title="Rename project"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M11.5 2.5a2.12 2.12 0 0 1 3 3L5 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </button>
-                </>
+                <h1 className={styles.titleText}>{project.name}</h1>
               )}
+              {isDeleted && <span className={styles.deletedBadge}>Deleted</span>}
             </div>
 
+            {!isDeleted && (
+              <div ref={menuRef} className={styles.menuWrap}>
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnActive : ''}`}
+                  aria-label="Project options"
+                >
+                  •••
+                </button>
+                {menuOpen && (
+                  <div className={styles.menuDropdown}>
+                    <button onClick={() => handleArchiveProject()} className={styles.menuItem}>
+                      {project.archived ? 'Unarchive' : 'Archive'}
+                    </button>
+                    <button onClick={handleDuplicate} className={styles.menuItem}>
+                      Duplicate
+                    </button>
+                    <div className={styles.menuDivider} />
+                    <button onClick={handleMoveTobin} className={`${styles.menuItem} ${styles.menuItemDanger}`}>
+                      Move to bin
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {editMode && (
+              <button onClick={handleCancelEdit} className={styles.cancelEditBtn}>
+                Cancel
+              </button>
+            )}
             <button
-              onClick={() => setEditMode((v) => !v)}
+              onClick={handleToggleEditMode}
+              disabled={isDeleted}
               className={`${styles.editToggle} ${editMode ? styles.editToggleActive : ''}`}
             >
               {editMode ? 'Done editing' : 'Edit'}
@@ -268,7 +369,7 @@ export default function ProjectPage() {
           {/* Two-column body */}
           <div className={styles.twoCol}>
             {/* Left: row list */}
-            <div className={styles.rowsCol}>
+            <div className={`${styles.rowsCol} ${isDeleted ? styles.rowsColDisabled : ''}`}>
               {sections.length === 0 ? (
                 <p className={styles.emptyState}>
                   No rows yet.{' '}
@@ -315,7 +416,7 @@ export default function ProjectPage() {
                 )}
               </div>
 
-              <div className={styles.statsCard}>
+              <div className={`${styles.statsCard} ${isDeleted ? styles.statsCardMuted : ''}`}>
                 <p className={styles.statsLabel}>Progress</p>
                 <p className={styles.statsValue}>
                   {done} <span className={styles.statsValueMuted}>/ {total}</span>
@@ -347,38 +448,40 @@ export default function ProjectPage() {
                 )}
               </div>
 
-              <div className={styles.stitchCard}>
-                <p className={styles.statsLabel}>Stitch counter</p>
-                <input
-                  type="number"
-                  min="0"
-                  value={stitchCount}
-                  onChange={(e) => {
-                    const n = parseInt(e.target.value, 10);
-                    setStitchCount(isNaN(n) || n < 0 ? 0 : n);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'ArrowUp') { e.preventDefault(); setStitchCount((n) => n + 1); }
-                    if (e.key === 'ArrowDown') { e.preventDefault(); setStitchCount((n) => Math.max(0, n - 1)); }
-                  }}
-                  className={styles.stitchInput}
-                />
-                <div className={styles.stitchBtns}>
-                  <button
-                    onClick={() => setStitchCount((n) => Math.max(0, n - 1))}
-                    className={styles.stitchBtn}
-                    aria-label="Decrease"
-                  >−</button>
-                  <button
-                    onClick={() => setStitchCount((n) => n + 1)}
-                    className={styles.stitchBtn}
-                    aria-label="Increase"
-                  >+</button>
+              {!isDeleted && (
+                <div className={styles.stitchCard}>
+                  <p className={styles.statsLabel}>Stitch counter</p>
+                  <input
+                    type="number"
+                    min="0"
+                    value={stitchCount}
+                    onChange={(e) => {
+                      const n = parseInt(e.target.value, 10);
+                      setStitchCount(isNaN(n) || n < 0 ? 0 : n);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowUp') { e.preventDefault(); setStitchCount((n) => n + 1); }
+                      if (e.key === 'ArrowDown') { e.preventDefault(); setStitchCount((n) => Math.max(0, n - 1)); }
+                    }}
+                    className={styles.stitchInput}
+                  />
+                  <div className={styles.stitchBtns}>
+                    <button
+                      onClick={() => setStitchCount((n) => Math.max(0, n - 1))}
+                      className={styles.stitchBtn}
+                      aria-label="Decrease"
+                    >−</button>
+                    <button
+                      onClick={() => setStitchCount((n) => n + 1)}
+                      className={styles.stitchBtn}
+                      aria-label="Increase"
+                    >+</button>
+                  </div>
+                  <button onClick={() => setStitchCount(0)} className={styles.stitchReset}>
+                    Reset
+                  </button>
                 </div>
-                <button onClick={() => setStitchCount(0)} className={styles.stitchReset}>
-                  Reset
-                </button>
-              </div>
+              )}
             </aside>
           </div>
         </div>
@@ -386,7 +489,7 @@ export default function ProjectPage() {
 
       <AppFooter />
 
-      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
+      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} onUndo={toast.onUndo} />}
     </div>
   );
 }

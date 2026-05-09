@@ -134,7 +134,7 @@ export function SectionList({
   onDeleteSection,
   onAddSection,
 }: SectionListProps) {
-  const showHeaders = sections.length > 1;
+  const showHeaders = true;
 
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(loadCollapsed);
   const [addingRowTo, setAddingRowTo] = useState<string | null>(null);

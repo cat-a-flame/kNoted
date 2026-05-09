@@ -28,5 +28,6 @@ export type Project = {
   activity: string[];
   created_at: string;
   cover_url: string | null;
+  deleted_at: string | null;
   sections?: Section[];
 };
