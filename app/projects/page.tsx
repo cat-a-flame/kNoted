@@ -20,7 +20,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('active');
   const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error'; onUndo?: () => void } | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -67,7 +67,11 @@ export default function ProjectsPage() {
     const { error } = await supabase.from('projects').update({ archived }).eq('id', id);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, archived } : p)));
-    setToast({ message: archived ? 'Project archived.' : 'Project unarchived.', variant: 'success' });
+    setToast({
+      message: archived ? 'Project archived.' : 'Project unarchived.',
+      variant: 'success',
+      onUndo: () => handleArchive(id, !archived),
+    });
   };
 
   const handleRestore = async (id: string) => {
@@ -162,7 +166,7 @@ export default function ProjectsPage() {
         />
       )}
 
-      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
+      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} onUndo={toast.onUndo} />}
     </div>
   );
 }

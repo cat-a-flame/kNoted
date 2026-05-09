@@ -25,7 +25,7 @@ export default function ProjectPage() {
   const [coverUploading, setCoverUploading] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error'; onUndo?: () => void } | null>(null);
   const [stitchCount, setStitchCount] = useState(0);
 
   const router = useRouter();
@@ -86,14 +86,18 @@ export default function ProjectPage() {
     }
   }, [editMode, project?.name, submitRename]);
 
-  const handleArchiveProject = useCallback(async () => {
+  const handleArchiveProject = useCallback(async (forceArchived?: boolean) => {
     if (!project) return;
     setMenuOpen(false);
-    const nextArchived = !project.archived;
+    const nextArchived = forceArchived !== undefined ? forceArchived : !project.archived;
     const { error } = await createClient().from('projects').update({ archived: nextArchived }).eq('id', id);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     setProject((prev) => prev ? { ...prev, archived: nextArchived } : prev);
-    setToast({ message: nextArchived ? 'Project archived.' : 'Project unarchived.', variant: 'success' });
+    setToast({
+      message: nextArchived ? 'Project archived.' : 'Project unarchived.',
+      variant: 'success',
+      onUndo: () => handleArchiveProject(!nextArchived),
+    });
   }, [id, project]);
 
   const handleDuplicate = useCallback(async () => {
@@ -313,7 +317,7 @@ export default function ProjectPage() {
               </button>
               {menuOpen && (
                 <div className={styles.menuDropdown}>
-                  <button onClick={handleArchiveProject} className={styles.menuItem}>
+                  <button onClick={() => handleArchiveProject()} className={styles.menuItem}>
                     {project.archived ? 'Unarchive' : 'Archive'}
                   </button>
                   <button onClick={handleDuplicate} className={styles.menuItem}>
@@ -458,7 +462,7 @@ export default function ProjectPage() {
 
       <AppFooter />
 
-      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
+      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} onUndo={toast.onUndo} />}
     </div>
   );
 }
