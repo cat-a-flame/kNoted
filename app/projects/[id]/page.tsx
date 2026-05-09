@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
@@ -25,10 +25,9 @@ export default function ProjectPage() {
   const [coverUploading, setCoverUploading] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error'; onUndo?: () => void; onDismiss?: () => void } | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error'; onUndo?: () => void } | null>(null);
   const [stitchCount, setStitchCount] = useState(0);
 
-  const router = useRouter();
   const didScrollRef = useRef(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -126,20 +125,19 @@ export default function ProjectPage() {
   const handleMoveTobin = useCallback(async () => {
     if (!project) return;
     setMenuOpen(false);
-    const { error } = await createClient().from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+    const deletedAt = new Date().toISOString();
+    const { error } = await createClient().from('projects').update({ deleted_at: deletedAt }).eq('id', id);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
-    let undone = false;
+    setProject((prev) => (prev ? { ...prev, deleted_at: deletedAt } : prev));
     setToast({
       message: 'Project moved to bin.',
       variant: 'success',
       onUndo: async () => {
-        undone = true;
         await createClient().from('projects').update({ deleted_at: null }).eq('id', id);
         setProject((prev) => (prev ? { ...prev, deleted_at: null } : prev));
       },
-      onDismiss: () => { if (!undone) router.push('/projects'); },
     });
-  }, [id, project, router]);
+  }, [id, project]);
 
   const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -293,6 +291,8 @@ export default function ProjectPage() {
     );
   }
 
+  const isDeleted = !!project.deleted_at;
+
   return (
     <div className="appShell">
       <AppHeader />
@@ -316,34 +316,38 @@ export default function ProjectPage() {
               ) : (
                 <h1 className={styles.titleText}>{project.name}</h1>
               )}
+              {isDeleted && <span className={styles.deletedBadge}>Deleted</span>}
             </div>
 
-            <div ref={menuRef} className={styles.menuWrap}>
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnActive : ''}`}
-                aria-label="Project options"
-              >
-                •••
-              </button>
-              {menuOpen && (
-                <div className={styles.menuDropdown}>
-                  <button onClick={() => handleArchiveProject()} className={styles.menuItem}>
-                    {project.archived ? 'Unarchive' : 'Archive'}
-                  </button>
-                  <button onClick={handleDuplicate} className={styles.menuItem}>
-                    Duplicate
-                  </button>
-                  <div className={styles.menuDivider} />
-                  <button onClick={handleMoveTobin} className={`${styles.menuItem} ${styles.menuItemDanger}`}>
-                    Move to bin
-                  </button>
-                </div>
-              )}
-            </div>
+            {!isDeleted && (
+              <div ref={menuRef} className={styles.menuWrap}>
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnActive : ''}`}
+                  aria-label="Project options"
+                >
+                  •••
+                </button>
+                {menuOpen && (
+                  <div className={styles.menuDropdown}>
+                    <button onClick={() => handleArchiveProject()} className={styles.menuItem}>
+                      {project.archived ? 'Unarchive' : 'Archive'}
+                    </button>
+                    <button onClick={handleDuplicate} className={styles.menuItem}>
+                      Duplicate
+                    </button>
+                    <div className={styles.menuDivider} />
+                    <button onClick={handleMoveTobin} className={`${styles.menuItem} ${styles.menuItemDanger}`}>
+                      Move to bin
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <button
               onClick={handleToggleEditMode}
+              disabled={isDeleted}
               className={`${styles.editToggle} ${editMode ? styles.editToggleActive : ''}`}
             >
               {editMode ? 'Done editing' : 'Edit'}
@@ -402,7 +406,7 @@ export default function ProjectPage() {
                 )}
               </div>
 
-              <div className={styles.statsCard}>
+              <div className={`${styles.statsCard} ${isDeleted ? styles.statsCardMuted : ''}`}>
                 <p className={styles.statsLabel}>Progress</p>
                 <p className={styles.statsValue}>
                   {done} <span className={styles.statsValueMuted}>/ {total}</span>
@@ -434,38 +438,40 @@ export default function ProjectPage() {
                 )}
               </div>
 
-              <div className={styles.stitchCard}>
-                <p className={styles.statsLabel}>Stitch counter</p>
-                <input
-                  type="number"
-                  min="0"
-                  value={stitchCount}
-                  onChange={(e) => {
-                    const n = parseInt(e.target.value, 10);
-                    setStitchCount(isNaN(n) || n < 0 ? 0 : n);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'ArrowUp') { e.preventDefault(); setStitchCount((n) => n + 1); }
-                    if (e.key === 'ArrowDown') { e.preventDefault(); setStitchCount((n) => Math.max(0, n - 1)); }
-                  }}
-                  className={styles.stitchInput}
-                />
-                <div className={styles.stitchBtns}>
-                  <button
-                    onClick={() => setStitchCount((n) => Math.max(0, n - 1))}
-                    className={styles.stitchBtn}
-                    aria-label="Decrease"
-                  >−</button>
-                  <button
-                    onClick={() => setStitchCount((n) => n + 1)}
-                    className={styles.stitchBtn}
-                    aria-label="Increase"
-                  >+</button>
+              {!isDeleted && (
+                <div className={styles.stitchCard}>
+                  <p className={styles.statsLabel}>Stitch counter</p>
+                  <input
+                    type="number"
+                    min="0"
+                    value={stitchCount}
+                    onChange={(e) => {
+                      const n = parseInt(e.target.value, 10);
+                      setStitchCount(isNaN(n) || n < 0 ? 0 : n);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowUp') { e.preventDefault(); setStitchCount((n) => n + 1); }
+                      if (e.key === 'ArrowDown') { e.preventDefault(); setStitchCount((n) => Math.max(0, n - 1)); }
+                    }}
+                    className={styles.stitchInput}
+                  />
+                  <div className={styles.stitchBtns}>
+                    <button
+                      onClick={() => setStitchCount((n) => Math.max(0, n - 1))}
+                      className={styles.stitchBtn}
+                      aria-label="Decrease"
+                    >−</button>
+                    <button
+                      onClick={() => setStitchCount((n) => n + 1)}
+                      className={styles.stitchBtn}
+                      aria-label="Increase"
+                    >+</button>
+                  </div>
+                  <button onClick={() => setStitchCount(0)} className={styles.stitchReset}>
+                    Reset
+                  </button>
                 </div>
-                <button onClick={() => setStitchCount(0)} className={styles.stitchReset}>
-                  Reset
-                </button>
-              </div>
+              )}
             </aside>
           </div>
         </div>
@@ -473,7 +479,7 @@ export default function ProjectPage() {
 
       <AppFooter />
 
-      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => { const cb = toast.onDismiss; setToast(null); cb?.(); }} onUndo={toast.onUndo} />}
+      {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} onUndo={toast.onUndo} />}
     </div>
   );
 }

@@ -51,6 +51,21 @@
   white-space: nowrap;
 }
 
+.deletedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
 .renameInput {
   font-family: var(--font-serif);
   font-size: 1.125rem;
@@ -240,6 +255,11 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   padding: 1rem;
+}
+
+.statsCardMuted {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .statsLabel {
