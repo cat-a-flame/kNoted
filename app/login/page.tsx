@@ -2,8 +2,8 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase/client';
 import { Input } from '@/components/ui/Input';
 import { FormLabel } from '@/components/ui/FormLabel';
 import styles from './page.module.css';
@@ -20,17 +20,13 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (signInError) {
-      setError(signInError.message);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/projects');
+    } catch {
+      setError('Incorrect email or password.');
       setLoading(false);
-      return;
     }
-
-    router.push('/projects');
-    router.refresh();
   };
 
   return (
@@ -76,11 +72,6 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-
-        <p className={styles.footer}>
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className={styles.footerLink}>Sign up</Link>
-        </p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Lora, Figtree } from 'next/font/google';
+import { AuthGate } from '@/components/auth/AuthGate';
 import './globals.css';
 
 const lora = Lora({
@@ -22,7 +23,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${lora.variable} ${figtree.variable}`}>
-      <body className="font-sans bg-bg text-text-primary antialiased">{children}</body>
+      <body className="font-sans bg-bg text-text-primary antialiased">
+        <AuthGate>{children}</AuthGate>
+      </body>
     </html>
   );
 }

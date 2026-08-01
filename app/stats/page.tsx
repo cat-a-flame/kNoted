@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { listProjects } from '@/lib/firebase/projects';
 import { Project } from '@/lib/types';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppFooter } from '@/components/layout/AppFooter';
@@ -51,34 +51,11 @@ export default function StatsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const supabase = createClient();
-      const { data: projectData } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-      if (!projectData) { setLoading(false); return; }
-
-      const ids = projectData.map((p) => p.id);
-      const { data: sectionData } = ids.length
-        ? await supabase.from('sections').select('id, project_id').in('project_id', ids)
-        : { data: [] };
-
-      const sectionIds = (sectionData ?? []).map((s: { id: string }) => s.id);
-      const sectionToProject = new Map<string, string>(
-        (sectionData ?? []).map((s: { id: string; project_id: string }) => [s.id, s.project_id]),
-      );
-
-      const { data: rowData } = sectionIds.length
-        ? await supabase.from('rows').select('section_id, done').in('section_id', sectionIds)
-        : { data: [] };
-
-      const rowsByProject = new Map<string, { done: boolean }[]>();
-      (rowData ?? []).forEach((r: { section_id: string; done: boolean }) => {
-        const projectId = sectionToProject.get(r.section_id);
-        if (!projectId) return;
-        const arr = rowsByProject.get(projectId) ?? [];
-        arr.push({ done: r.done });
-        rowsByProject.set(projectId, arr);
-      });
-
-      setProjects(projectData.map((p) => ({ ...p, rows: rowsByProject.get(p.id) ?? [] })));
+      const projectData = await listProjects();
+      setProjects(projectData.map((p) => ({
+        ...p,
+        rows: p.sections.flatMap((s) => s.rows.map((r) => ({ done: r.done }))),
+      })));
       setLoading(false);
     };
     load();

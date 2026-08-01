@@ -4,9 +4,23 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase/client';
+import {
+  getProject,
+  createProject,
+  updateProject,
+  addSection,
+  updateSection as updateSectionDoc,
+  deleteSection as deleteSectionDoc,
+  addRow,
+  updateRow,
+  deleteRow,
+  duplicateRow as duplicateRowDoc,
+  reorderRows as reorderRowsDoc,
+  uploadCover,
+  deleteCover,
+} from '@/lib/firebase/projects';
 import { Project, Section, Row } from '@/lib/types';
-import { todayIso } from '@/lib/utils';
+import { uid, todayIso } from '@/lib/utils';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppFooter } from '@/components/layout/AppFooter';
 import { SectionList } from '@/components/rows/SectionList';
@@ -42,15 +56,12 @@ export default function ProjectPage() {
 
   useEffect(() => {
     const load = async () => {
-      const supabase = createClient();
-      const { data: p } = await supabase.from('projects').select('*').eq('id', id).single();
-      const { data: s } = await supabase
-        .from('sections').select('*, rows(*)')
-        .eq('project_id', id)
-        .order('position', { ascending: true })
-        .order('position', { ascending: true, foreignTable: 'rows' });
-      setProject(p ?? null);
-      setSections((s ?? []) as Section[]);
+      const p = await getProject(id);
+      setProject(p);
+      setSections(p ? [...p.sections].sort((a, b) => a.position - b.position).map((s) => ({
+        ...s,
+        rows: [...s.rows].sort((a, b) => a.position - b.position),
+      })) : []);
       setLoading(false);
     };
     load();
@@ -70,8 +81,12 @@ export default function ProjectPage() {
   const submitRename = useCallback(async (): Promise<boolean> => {
     const trimmed = renameValue.trim();
     if (!trimmed || trimmed === project?.name) return true;
-    const { error } = await createClient().from('projects').update({ name: trimmed }).eq('id', id);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return false; }
+    try {
+      await updateProject(id, { name: trimmed });
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return false;
+    }
     setProject((prev) => (prev ? { ...prev, name: trimmed } : prev));
     return true;
   }, [id, renameValue, project?.name]);
@@ -95,8 +110,12 @@ export default function ProjectPage() {
     if (!project) return;
     setMenuOpen(false);
     const nextArchived = forceArchived !== undefined ? forceArchived : !project.archived;
-    const { error } = await createClient().from('projects').update({ archived: nextArchived }).eq('id', id);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    try {
+      await updateProject(id, { archived: nextArchived });
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
     setProject((prev) => prev ? { ...prev, archived: nextArchived } : prev);
     setToast({
       message: nextArchived ? 'Project archived.' : 'Project unarchived.',
@@ -108,22 +127,20 @@ export default function ProjectPage() {
   const handleDuplicate = useCallback(async () => {
     if (!project) return;
     setMenuOpen(false);
-    const supabase = createClient();
-    const { data: newProject, error: pErr } = await supabase
-      .from('projects')
-      .insert({ name: `${project.name} (copy)`, archived: false, activity: [], cover_url: project.cover_url })
-      .select('*').single();
-    if (pErr) { setToast({ message: pErr.message, variant: 'error' }); return; }
-    for (const section of sections) {
-      const { data: newSection, error: sErr } = await supabase
-        .from('sections')
-        .insert({ project_id: newProject.id, position: section.position, name: section.name, yarn_name: section.yarn_name, yarn_weight: section.yarn_weight, yarn_colour: section.yarn_colour, hook_size: section.hook_size })
-        .select('*').single();
-      if (sErr || !newSection) continue;
-      const rows = section.rows ?? [];
-      if (rows.length > 0) {
-        await supabase.from('rows').insert(rows.map((r) => ({ section_id: newSection.id, position: r.position, title: r.title, note: r.note, stitch_count: r.stitch_count, done: false })));
-      }
+    const duplicatedSections: Section[] = sections.map((section) => ({
+      ...section,
+      id: uid(),
+      rows: (section.rows ?? []).map((r) => ({ ...r, id: uid(), done: false })),
+    }));
+    try {
+      await createProject({
+        name: `${project.name} (copy)`,
+        cover_url: project.cover_url,
+        sections: duplicatedSections,
+      });
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
     }
     setToast({ message: 'Project duplicated.', variant: 'success' });
   }, [project, sections]);
@@ -132,14 +149,18 @@ export default function ProjectPage() {
     if (!project) return;
     setMenuOpen(false);
     const deletedAt = new Date().toISOString();
-    const { error } = await createClient().from('projects').update({ deleted_at: deletedAt }).eq('id', id);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    try {
+      await updateProject(id, { deleted_at: deletedAt });
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
     setProject((prev) => (prev ? { ...prev, deleted_at: deletedAt } : prev));
     setToast({
       message: 'Project moved to bin.',
       variant: 'success',
       onUndo: async () => {
-        await createClient().from('projects').update({ deleted_at: null }).eq('id', id);
+        await updateProject(id, { deleted_at: null });
         setProject((prev) => (prev ? { ...prev, deleted_at: null } : prev));
       },
     });
@@ -149,35 +170,38 @@ export default function ProjectPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setCoverUploading(true);
-    const supabase = createClient();
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `${id}/cover.${ext}`;
-    const { error } = await supabase.storage.from('pattern-covers').upload(path, file, { upsert: true });
-    if (error) { setToast({ message: error.message, variant: 'error' }); setCoverUploading(false); return; }
-    const { data } = supabase.storage.from('pattern-covers').getPublicUrl(path);
-    const url = `${data.publicUrl}?v=${Date.now()}`;
-    await supabase.from('projects').update({ cover_url: data.publicUrl }).eq('id', id);
-    setProject((prev) => (prev ? { ...prev, cover_url: url } : prev));
-    setToast({ message: 'Cover image saved.', variant: 'success' });
+    try {
+      const url = await uploadCover(id, file);
+      await updateProject(id, { cover_url: url });
+      setProject((prev) => (prev ? { ...prev, cover_url: `${url}&v=${Date.now()}` } : prev));
+      setToast({ message: 'Cover image saved.', variant: 'success' });
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+    }
     setCoverUploading(false);
     e.target.value = '';
   }, [id]);
 
   const handleRemoveCover = useCallback(async () => {
-    const supabase = createClient();
-    await supabase.from('projects').update({ cover_url: null }).eq('id', id);
+    if (project?.cover_url) {
+      void deleteCover(project.cover_url);
+    }
+    await updateProject(id, { cover_url: null });
     setProject((prev) => (prev ? { ...prev, cover_url: null } : prev));
-  }, [id]);
+  }, [id, project?.cover_url]);
 
   const handleToggleRow = useCallback(async (sectionId: string, rowId: string, nextDone: boolean) => {
-    const supabase = createClient();
-    const { error } = await supabase.from('rows').update({ done: nextDone }).eq('id', rowId);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    try {
+      await updateRow(id, sectionId, rowId, { done: nextDone });
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
     if (nextDone && project) {
       const today = todayIso();
       if (!project.activity.includes(today)) {
         const nextActivity = [...project.activity, today];
-        await supabase.from('projects').update({ activity: nextActivity }).eq('id', id);
+        await updateProject(id, { activity: nextActivity });
         setProject((prev) => (prev ? { ...prev, activity: nextActivity } : prev));
       }
     }
@@ -190,9 +214,12 @@ export default function ProjectPage() {
   }, [id, project]);
 
   const handleEditRow = useCallback(async (sectionId: string, rowId: string, data: { note: string | null; stitch_count: number | null }) => {
-    const supabase = createClient();
-    const { error } = await supabase.from('rows').update(data).eq('id', rowId);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    try {
+      await updateRow(id, sectionId, rowId, data);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
     setSections((prev) =>
       prev.map((s) => s.id === sectionId
         ? { ...s, rows: (s.rows ?? []).map((r) => (r.id === rowId ? { ...r, ...data } : r)) }
@@ -200,74 +227,78 @@ export default function ProjectPage() {
       ),
     );
     setToast({ message: 'Row saved.', variant: 'success' });
-  }, []);
+  }, [id]);
 
   const handleDuplicateRow = useCallback(async (sectionId: string, rowId: string) => {
-    const supabase = createClient();
-    const section = sections.find((s) => s.id === sectionId);
-    const rows = section?.rows ?? [];
-    const source = rows.find((r) => r.id === rowId);
-    if (!source) return;
-    const insertPos = source.position + 1;
-    const reindexed = rows.map((r) => r.position >= insertPos ? { ...r, position: r.position + 1 } : r);
-    const { data, error } = await supabase.from('rows')
-      .insert({ section_id: sectionId, position: insertPos, title: source.title, note: source.note, stitch_count: source.stitch_count, done: false })
-      .select('*').single();
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
-    await Promise.all(reindexed.filter((r) => r.id !== data.id && r.position >= insertPos).map((r) => supabase.from('rows').update({ position: r.position }).eq('id', r.id)));
-    const merged = [...reindexed, data as Row].sort((a, b) => a.position - b.position);
-    setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, rows: merged } : s)));
-  }, [sections]);
+    let updatedSections: Section[];
+    try {
+      updatedSections = await duplicateRowDoc(id, sectionId, rowId);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
+    setSections(updatedSections);
+  }, [id]);
 
   const handleDeleteRow = useCallback(async (sectionId: string, rowId: string) => {
-    const supabase = createClient();
-    const { error } = await supabase.from('rows').delete().eq('id', rowId);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    try {
+      await deleteRow(id, sectionId, rowId);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
     setSections((prev) => prev.map((s) => s.id === sectionId ? { ...s, rows: (s.rows ?? []).filter((r) => r.id !== rowId) } : s));
     setToast({ message: 'Row deleted.', variant: 'success' });
-  }, []);
+  }, [id]);
 
   const handleReorderRows = useCallback(async (sectionId: string, reordered: Row[]) => {
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, rows: reordered } : s)));
-    const supabase = createClient();
-    await Promise.all(reordered.map((r) => supabase.from('rows').update({ position: r.position }).eq('id', r.id)));
-  }, []);
+    await reorderRowsDoc(id, sectionId, reordered);
+  }, [id]);
 
   const handleAddRow = useCallback(async (sectionId: string, data: { note: string | null; stitch_count: number | null }) => {
-    const supabase = createClient();
-    const section = sections.find((s) => s.id === sectionId);
-    const rowCount = (section?.rows ?? []).length;
-    const title = rowCount === 0 ? 'Base' : `Row ${rowCount}`;
-    const { data: newRow, error } = await supabase.from('rows')
-      .insert({ section_id: sectionId, position: rowCount, title, note: data.note, stitch_count: data.stitch_count, done: false })
-      .select('*').single();
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
-    setSections((prev) => prev.map((s) => s.id === sectionId ? { ...s, rows: [...(s.rows ?? []), newRow as Row] } : s));
-  }, [sections]);
+    let updatedSections: Section[];
+    try {
+      updatedSections = await addRow(id, sectionId, data);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
+    setSections(updatedSections);
+  }, [id]);
 
   const handleUpdateSection = useCallback(async (sectionId: string, updates: { name?: string; yarn_name?: string | null; yarn_weight?: string | null; yarn_colour?: string | null; hook_size?: string | null }) => {
-    const supabase = createClient();
-    const { error } = await supabase.from('sections').update(updates).eq('id', sectionId);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    try {
+      await updateSectionDoc(id, sectionId, updates);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, ...updates } : s)));
     setToast({ message: 'Changes saved.', variant: 'success' });
-  }, []);
+  }, [id]);
 
   const handleDeleteSection = useCallback(async (sectionId: string) => {
-    const supabase = createClient();
-    const { error } = await supabase.from('sections').delete().eq('id', sectionId);
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    try {
+      await deleteSectionDoc(id, sectionId);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
     setSections((prev) => prev.filter((s) => s.id !== sectionId));
     setToast({ message: 'Section deleted.', variant: 'success' });
-  }, []);
+  }, [id]);
 
   const handleAddSection = useCallback(async (name: string) => {
-    const supabase = createClient();
-    const { data, error } = await supabase.from('sections')
-      .insert({ project_id: id, position: sections.length, name }).select('*').single();
-    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
-    setSections((prev) => [...prev, { ...data, rows: [] } as Section]);
-  }, [id, sections.length]);
+    let updatedSections: Section[];
+    try {
+      updatedSections = await addSection(id, name);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      return;
+    }
+    setSections(updatedSections);
+  }, [id]);
 
   if (loading) {
     return (
