@@ -1,18 +1,5 @@
-export type Section = {
-  id: string;
-  project_id: string;
-  position: number;
-  name: string;
-  yarn_name: string | null;
-  yarn_weight: string | null;
-  yarn_colour: string | null;
-  hook_size: string | null;
-  rows?: Row[];
-};
-
 export type Row = {
   id: string;
-  section_id: string;
   position: number;
   title: string;
   note: string | null;
@@ -20,14 +7,24 @@ export type Row = {
   done: boolean;
 };
 
+export type Section = {
+  id: string;
+  position: number;
+  name: string;
+  yarn_name: string | null;
+  yarn_weight: string | null;
+  yarn_colour: string | null;
+  hook_size: string | null;
+  rows: Row[];
+};
+
 export type Project = {
   id: string;
-  user_id: string;
   name: string;
   archived: boolean;
   activity: string[];
   created_at: string;
   cover_url: string | null;
   deleted_at: string | null;
-  sections?: Section[];
+  sections: Section[];
 };

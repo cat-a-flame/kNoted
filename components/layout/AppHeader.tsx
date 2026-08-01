@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase/client';
 import styles from './AppHeader.module.css';
 
 const navItems = [
@@ -17,11 +18,9 @@ function UserMenu() {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    createClient().auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? '');
-    });
-  }, []);
+  useEffect(() => onAuthStateChanged(auth, (user) => {
+    setEmail(user?.email ?? '');
+  }), []);
 
   useEffect(() => {
     if (!open) return;
@@ -33,9 +32,8 @@ function UserMenu() {
   }, [open]);
 
   const handleSignOut = async () => {
-    await createClient().auth.signOut();
+    await signOut(auth);
     router.push('/login');
-    router.refresh();
   };
 
   return (
@@ -51,9 +49,6 @@ function UserMenu() {
       {open && (
         <div className={styles.dropdown}>
           {email && <p className={styles.dropdownEmail}>{email}</p>}
-          <Link href="/account" className={styles.dropdownItem} onClick={() => setOpen(false)}>
-            Account settings
-          </Link>
           <button onClick={handleSignOut} className={styles.signOutItem}>Sign out</button>
         </div>
       )}

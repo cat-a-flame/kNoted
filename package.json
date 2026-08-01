@@ -12,9 +12,8 @@
   },
   "dependencies": {
     "@netlify/next": "^1.4.9",
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.47.11",
     "autoprefixer": "^10.5.0",
+    "firebase": "^12.17.0",
     "next": "^15.3.3",
     "postcss": "^8.5.10",
     "react": "^19.0.0",

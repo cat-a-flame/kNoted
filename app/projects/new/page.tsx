@@ -2,8 +2,9 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { createProject } from '@/lib/firebase/projects';
+import { Section } from '@/lib/types';
+import { uid } from '@/lib/utils';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppFooter } from '@/components/layout/AppFooter';
 import { Input } from '@/components/ui/Input';
@@ -82,32 +83,31 @@ export default function NewProjectPage() {
     setError(null);
     setSaving(true);
 
-    const supabase = createClient();
-    const { data: user } = await supabase.auth.getUser();
-    const userId = user.user?.id;
-    if (!userId) { setError('Not authenticated.'); setSaving(false); return; }
+    const draftSections: Section[] = sections.map((sec, si) => ({
+      id: uid(),
+      position: si,
+      name: sec.name,
+      yarn_name: sec.yarn_name || null,
+      yarn_weight: sec.yarn_weight || null,
+      yarn_colour: sec.yarn_colour || null,
+      hook_size: sec.hook_size || null,
+      rows: sec.rows.map((row, ri) => ({
+        id: uid(),
+        position: ri,
+        title: row.title,
+        note: row.note || null,
+        stitch_count: row.stitch_count,
+        done: false,
+      })),
+    }));
 
-    const { data: project, error: projectError } = await supabase
-      .from('projects').insert({ user_id: userId, name: trimmedName }).select('*').single();
-    if (projectError) { setError(projectError.message); setSaving(false); return; }
-
-    for (let si = 0; si < sections.length; si++) {
-      const sec = sections[si];
-      const { data: sectionData, error: sectionError } = await supabase
-        .from('sections')
-        .insert({ project_id: project.id, position: si, name: sec.name, yarn_name: sec.yarn_name || null, yarn_weight: sec.yarn_weight || null, yarn_colour: sec.yarn_colour || null, hook_size: sec.hook_size || null })
-        .select('*').single();
-      if (sectionError) { setToast({ message: sectionError.message, variant: 'error' }); setSaving(false); return; }
-
-      if (sec.rows.length > 0) {
-        const { error: rowsError } = await supabase.from('rows').insert(
-          sec.rows.map((row, ri) => ({ section_id: sectionData.id, position: ri, title: row.title, note: row.note || null, stitch_count: row.stitch_count, done: false })),
-        );
-        if (rowsError) { setToast({ message: rowsError.message, variant: 'error' }); setSaving(false); return; }
-      }
+    try {
+      const project = await createProject({ name: trimmedName, sections: draftSections });
+      router.push(`/projects/${project.id}`);
+    } catch (err) {
+      setToast({ message: (err as Error).message, variant: 'error' });
+      setSaving(false);
     }
-
-    router.push(`/projects/${project.id}`);
   };
 
   return (
