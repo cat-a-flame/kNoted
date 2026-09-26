@@ -60,6 +60,9 @@ const toInt = (v: string, fallback: number) => {
   return Number.isFinite(n) && n >= 1 ? n : fallback;
 };
 
+/** Rounds with stitches and titled steps (e.g. "Shape segment" ×6) can repeat; an untitled note step can't. */
+const canRepeat = (s: DraftStep) => s.unit.length > 0 || !!s.title.trim();
+
 type Props = { patternId?: string };
 
 export function PatternEditor({ patternId }: Props) {
@@ -145,7 +148,7 @@ export function PatternEditor({ patternId }: Props) {
     let n = 0;
     return steps.map((s) => {
       if (s.title.trim()) return null;
-      const times = s.unit.length ? toInt(s.times, 1) : 1;
+      const times = canRepeat(s) ? toInt(s.times, 1) : 1;
       const first = n + 1;
       n += times;
       return times > 1 ? `${UnitWord}s ${first}–${n}` : `${UnitWord} ${first}`;
@@ -223,7 +226,7 @@ export function PatternEditor({ patternId }: Props) {
         stitch_unit: s.unit,
         repeat_count: repeat,
         end_count: Number.isFinite(end) ? end : null,
-        times: countable ? toInt(s.times, 1) : 1,
+        times: canRepeat(s) ? toInt(s.times, 1) : 1,
       };
     });
 
@@ -337,6 +340,7 @@ export function PatternEditor({ patternId }: Props) {
                 const label = s.title.trim() || autoLabels[i];
                 const open = openKeys.has(s.key);
                 const endShown = s.end.trim() || suggested;
+                const times = canRepeat(s) ? toInt(s.times, 1) : 1;
                 return (
                   <section key={s.key} className={`${styles.stepCard} ${open ? '' : styles.stepCardClosed}`}>
                     <div className={`${styles.stepHeader} ${open ? '' : styles.stepHeaderClosed}`}>
@@ -349,6 +353,7 @@ export function PatternEditor({ patternId }: Props) {
                           <span className={styles.stepSummary}>
                             {shorthand(s.unit, repeat)}
                             {countable && endShown != null && ` → ${endShown} sts`}
+                            {times > 1 && s.title.trim() && ` · ×${times}`}
                             {s.note.trim() && <span className={styles.stepSummaryNote}> · {s.note.trim()}</span>}
                           </span>
                         )}
@@ -420,6 +425,19 @@ export function PatternEditor({ patternId }: Props) {
                             <Input id={`${s.key}-times`} type="number" min={1} inputMode="numeric" value={s.times} onChange={(e) => updateStep(s.key, { times: e.target.value })} />
                           </div>
                           <p className={styles.hint}>e.g. 9 for R13–R21</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {!countable && s.title.trim() && (
+                      <div className={styles.numbersGrid}>
+                        <div className={styles.field}>
+                          <FormLabel htmlFor={`${s.key}-times`}>Same step in a row</FormLabel>
+                          <div className={styles.inputAffix}>
+                            <span>×</span>
+                            <Input id={`${s.key}-times`} type="number" min={1} inputMode="numeric" value={s.times} onChange={(e) => updateStep(s.key, { times: e.target.value })} />
+                          </div>
+                          <p className={styles.hint}>e.g. 6 for six identical segments</p>
                         </div>
                       </div>
                     )}
