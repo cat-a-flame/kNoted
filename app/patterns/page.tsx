@@ -66,7 +66,10 @@ export default function PatternsPage() {
                 </button>
               ))}
             </div>
-            <Link href="/patterns/new" className={styles.newBtn}>+ New pattern</Link>
+            <div className={styles.actions}>
+              <Link href="/patterns/import" className={styles.importBtn}>Import pattern</Link>
+              <Link href="/patterns/new" className={styles.newBtn}>+ New pattern</Link>
+            </div>
           </div>
 
           {loading ? (
