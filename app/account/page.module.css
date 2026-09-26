@@ -1,66 +1,65 @@
+.page {
+  min-height: 100vh;
+}
+
 .main {
-  flex: 1;
+  padding: 20px var(--page-gutter) 48px;
 }
 
 .container {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 1.5rem;
+  max-width: 560px;
 }
 
 .pageTitle {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 24px;
 }
 
 .section {
   background-color: var(--color-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
+  border: var(--hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px 26px;
+  margin-bottom: 20px;
 }
 
 .sectionTitle {
-  font-size: 0.875rem;
+  font-family: var(--font-display);
+  font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 14px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 }
 
 .saveBtn {
-  align-self: flex-start;
-  padding: 0.4375rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  background-color: var(--color-coral);
+  align-self: flex-end;
+  background-color: var(--color-accent);
   color: #fff;
-  border-radius: var(--radius-sm);
-  transition: background-color 0.15s;
+  border-radius: var(--radius-pill);
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.15s, opacity 0.15s;
 }
 
 .saveBtn:hover:not(:disabled) {
-  background-color: var(--color-coral-dark);
+  background-color: var(--color-accent-dark);
 }
 
 .saveBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.5;
 }

@@ -1,0 +1,68 @@
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-accent);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--color-accent-dark);
+}
+
+.primary:disabled {
+  opacity: 0.5;
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-pill);
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.ghost:hover {
+  color: var(--color-text);
+}
+
+.danger {
+  composes: ghost;
+  color: var(--color-danger);
+}
+
+.danger:hover {
+  color: var(--color-danger);
+  background-color: var(--color-danger-light);
+}
+
+.iconRound {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-faint);
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.iconRound:hover:not(:disabled) {
+  color: var(--color-text);
+  background-color: var(--color-surface-muted);
+}
+
+.iconRound:disabled {
+  opacity: 0.35;
+}

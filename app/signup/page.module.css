@@ -1,12 +1,12 @@
 .successCard {
-  background-color: var(--color-coral-light);
-  border: 1px solid rgba(29, 158, 117, 0.2);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  background-color: var(--color-sage-light);
+  border-radius: var(--radius-card);
+  padding: 24px;
 }
 
 .successText {
-  font-size: 0.875rem;
-  color: var(--color-coral-dark);
-  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-sage-dark);
+  font-weight: 600;
+  line-height: 1.5;
 }

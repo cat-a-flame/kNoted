@@ -1,14 +1,13 @@
 import styles from './Input.module.css';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  inputSize?: 'sm' | 'md';
+export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={`${styles.field} ${className ?? ''}`} {...props} />;
 }
 
-export function Input({ inputSize, className, ...props }: InputProps) {
-  return (
-    <input
-      className={`${styles.input} ${inputSize === 'sm' ? styles.sm : ''} ${className ?? ''}`}
-      {...props}
-    />
-  );
+export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={`${styles.field} ${styles.textarea} ${className ?? ''}`} {...props} />;
+}
+
+export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select className={`${styles.field} ${className ?? ''}`} {...props} />;
 }

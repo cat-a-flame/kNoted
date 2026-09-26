@@ -1,0 +1,223 @@
+.page {
+  min-height: 100vh;
+}
+
+.header {
+  max-width: calc(1000px + 2 * var(--page-gutter));
+  padding: 20px var(--page-gutter) 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.body {
+  padding: 16px var(--page-gutter) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formCard {
+  max-width: 1000px;
+  background-color: var(--color-surface);
+  border: var(--hairline);
+  border-radius: var(--radius-card);
+  padding: 26px 28px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.colourRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.colourPicker {
+  width: 52px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-input);
+  background-color: var(--color-surface);
+  cursor: pointer;
+}
+
+.colourHex {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.empty {
+  max-width: 1000px;
+  border: 1px dashed var(--border-input);
+  border-radius: var(--radius-card);
+  padding: 40px 28px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 1000px;
+}
+
+.card {
+  position: relative;
+  background-color: var(--color-surface);
+  border: var(--hairline);
+  border-radius: var(--radius-card-sm);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardEditing {
+  outline: 2px solid var(--color-accent);
+}
+
+.cardActions {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 2px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 56px;
+}
+
+.swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+}
+
+.cardHeadText {
+  min-width: 0;
+}
+
+.colourName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brand {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-track);
+  color: var(--color-text-soft);
+}
+
+.specs {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.specs strong {
+  color: var(--color-text-soft);
+}
+
+.care {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  border-top: 0.5px solid rgba(51, 42, 34, 0.1);
+  padding-top: 8px;
+}
+
+.notes {
+  font-size: 12px;
+  color: #9c6a4f;
+  font-style: italic;
+}
+
+@media (max-width: 960px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .cards,
+  .grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formCard {
+    padding: 20px;
+  }
+}

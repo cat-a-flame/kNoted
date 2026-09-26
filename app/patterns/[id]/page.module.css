@@ -1,0 +1,563 @@
+.layout {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr) 320px;
+  grid-template-areas: 'sidebar main counter';
+  height: 100vh;
+  overflow: hidden;
+}
+
+.centerMsg {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+/* ── Sidebar ─────────────────────────── */
+.sidebar {
+  grid-area: sidebar;
+  background-color: var(--color-surface-muted);
+  border-right: var(--hairline);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebarHead {
+  padding: 24px 22px 18px;
+}
+
+.sidebarNav {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: color 0.15s;
+}
+
+.backLink:hover {
+  color: var(--color-text);
+}
+
+.patternName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.patternMeta {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.progressRow {
+  padding: 0 22px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.track {
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-track);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent);
+  transition: width 0.3s ease;
+}
+
+.fillDone {
+  background-color: var(--color-sage);
+}
+
+.progressLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.divider {
+  height: 0.5px;
+  background-color: var(--border);
+  margin: 0 22px;
+}
+
+.stepList {
+  flex: 1 1 auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.stepRow:hover {
+  background-color: rgba(51, 42, 34, 0.04);
+}
+
+.stepRowActive,
+.stepRowActive:hover {
+  background-color: var(--color-accent-light);
+}
+
+.badge {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-track);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.badgeActive {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+
+.badgeDone {
+  background-color: var(--color-sage);
+  color: #fff;
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stepTitle {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stepSub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stitchKey {
+  padding: 16px 22px 22px;
+  border-top: var(--hairline);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.stitchKey strong {
+  color: var(--color-text-soft);
+}
+
+/* ── Main ────────────────────────────── */
+.main {
+  grid-area: main;
+  overflow-y: auto;
+  padding: 32px 32px 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.yarnDot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-pill);
+  flex: 0 0 auto;
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.stepHeading {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: var(--hairline);
+  border-radius: var(--radius-card);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bodyText {
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.inlineLink {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.chipBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.repeatLabel,
+.endLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.repeatLabel {
+  font-weight: 600;
+}
+
+/* ── Counter ─────────────────────────── */
+.counter {
+  grid-area: counter;
+  border-left: var(--hairline);
+  background-color: var(--color-surface);
+  overflow-y: auto;
+  padding: 28px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.counterTitle {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.counterBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+.repeatInfo {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.dial {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+
+.dialSvg {
+  transform: rotate(-90deg);
+}
+
+.dialArc {
+  transition: stroke-dashoffset 0.2s ease;
+}
+
+.dialCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialCount {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 42px;
+  line-height: 1;
+}
+
+.dialOf {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.nextLabel {
+  min-height: 1.3em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.counterButtons {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.decBtn {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  border: 1.5px solid rgba(51, 42, 34, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.decBtn:disabled {
+  opacity: 0.35;
+}
+
+.incBtn {
+  width: 66px;
+  height: 66px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, transform 0.08s;
+}
+
+.incBtn:hover {
+  background-color: var(--color-accent-dark);
+}
+
+.incBtn:active,
+.decBtn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.keyHint {
+  font-size: 11px;
+  color: var(--color-text-faint);
+  text-align: center;
+}
+
+.doneBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  width: 100%;
+}
+
+.doneIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-sage-light);
+  color: var(--color-sage-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doneTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.doneText {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.nextBtn {
+  align-self: stretch;
+  background-color: var(--color-sage-dark);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 11px 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.nextBtn:hover {
+  background-color: #3f4b32;
+}
+
+.linkBtn {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.idleBox {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 0 8px;
+  width: 100%;
+}
+
+.idleIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Smaller screens ─────────────────── */
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 232px minmax(0, 1fr) 280px;
+  }
+
+  .main {
+    padding: 28px 24px;
+  }
+}
+
+/* Tablet & phone: one column, counter first so it stays under your thumb. */
+@media (max-width: 860px) {
+  .layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: var(--hairline);
+    overflow: visible;
+  }
+
+  .sidebarHead {
+    padding: 20px 16px 14px;
+  }
+
+  .progressRow {
+    padding: 0 16px 14px;
+  }
+
+  .divider,
+  .stitchKey {
+    display: none;
+  }
+
+  .stepList {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 16px 14px;
+    gap: 6px;
+  }
+
+  .stepRow {
+    width: auto;
+    flex: 0 0 auto;
+    padding: 6px 12px 6px 6px;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-pill);
+  }
+
+  .stepSub {
+    display: none;
+  }
+
+  .counter {
+    order: 1;
+    border-left: none;
+    border-bottom: var(--hairline);
+    overflow: visible;
+    padding: 20px 16px 24px;
+  }
+
+  .keyHint {
+    display: none;
+  }
+
+  .main {
+    order: 2;
+    overflow: visible;
+    padding: 20px 16px 40px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+}

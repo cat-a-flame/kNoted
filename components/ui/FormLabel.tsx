@@ -1,13 +1,8 @@
 import styles from './FormLabel.module.css';
 
-interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  variant?: 'default' | 'meta';
-  children: React.ReactNode;
-}
-
-export function FormLabel({ variant = 'default', children, ...props }: FormLabelProps) {
+export function FormLabel({ children, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
-    <label className={variant === 'meta' ? styles.meta : styles.label} {...props}>
+    <label className={styles.label} {...props}>
       {children}
     </label>
   );

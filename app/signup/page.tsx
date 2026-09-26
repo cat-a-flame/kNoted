@@ -62,7 +62,7 @@ export default function SignupPage() {
       <div className={loginStyles.container}>
         <div className={loginStyles.brand}>
           <h1 className={loginStyles.brandTitle}>kNoted</h1>
-          <p className={loginStyles.brandSub}>Your crochet project notebook</p>
+          <p className={loginStyles.brandSub}>Your crochet companion</p>
         </div>
 
         <div className={loginStyles.card}>

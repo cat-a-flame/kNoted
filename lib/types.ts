@@ -1,33 +1,47 @@
-export type Section = {
+export type StitchType = 'sc' | 'hdc' | 'dc' | 'tr' | 'ch' | 'slst' | 'inc' | 'dec';
+
+export type WorkedIn = 'rounds' | 'rows';
+
+export type Yarn = {
   id: string;
-  project_id: string;
-  position: number;
-  name: string;
-  yarn_name: string | null;
-  yarn_weight: string | null;
-  yarn_colour: string | null;
-  hook_size: string | null;
-  rows?: Row[];
+  user_id: string;
+  brand: string;
+  colour_name: string;
+  colour_hex: string;
+  fiber: string | null;
+  hook: string | null;
+  skein: string | null;
+  quantity: string | null;
+  care: string | null;
+  notes: string | null;
+  created_at: string;
 };
 
-export type Row = {
+export type PatternStep = {
   id: string;
-  section_id: string;
+  pattern_id: string;
   position: number;
-  title: string;
+  name: string | null;
   note: string | null;
-  stitch_count: number | null;
-  done: boolean;
+  yarn_id: string | null;
+  stitch_unit: StitchType[];
+  repeat_count: number;
+  end_count: number | null;
+  times: number;
 };
 
-export type Project = {
+export type Pattern = {
   id: string;
   user_id: string;
   name: string;
-  archived: boolean;
-  activity: string[];
+  hook_size: string | null;
+  yarn_summary: string | null;
+  worked_in: WorkedIn;
+  current_step: number;
+  current_stitch: number;
+  started_at: string | null;
+  finished_at: string | null;
   created_at: string;
-  cover_url: string | null;
-  deleted_at: string | null;
-  sections?: Section[];
+  updated_at: string;
+  pattern_steps?: PatternStep[];
 };
