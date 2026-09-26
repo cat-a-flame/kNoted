@@ -23,7 +23,6 @@ type Draft = {
   fiber: string;
   hook: string;
   skein: string;
-  quantity: string;
   care: string;
   notes: string;
 };
@@ -35,7 +34,6 @@ const EMPTY_DRAFT: Draft = {
   fiber: '',
   hook: '',
   skein: '',
-  quantity: '',
   care: '',
   notes: '',
 };
@@ -47,7 +45,6 @@ const toDraft = (y: Yarn): Draft => ({
   fiber: y.fiber ?? '',
   hook: y.hook ?? '',
   skein: y.skein ?? '',
-  quantity: y.quantity ?? '',
   care: y.care ?? '',
   notes: y.notes ?? '',
 });
@@ -59,7 +56,6 @@ const toRow = (d: Draft) => ({
   fiber: d.fiber.trim() || null,
   hook: d.hook.trim() || null,
   skein: d.skein.trim() || null,
-  quantity: d.quantity.trim() || null,
   care: d.care.trim() || null,
   notes: d.notes.trim() || null,
 });
@@ -222,11 +218,10 @@ export default function YarnsPage() {
                   <h3 className={styles.colourName}>{y.colour_name}</h3>
                   <p className={styles.brand}>{y.brand}{y.fiber ? ` · ${y.fiber}` : ''}</p>
 
-                  {(y.hook || y.skein || y.quantity) && (
+                  {(y.hook || y.skein) && (
                     <dl className={styles.specs}>
                       {y.hook && <><dt>Hook</dt><dd>{y.hook}</dd></>}
                       {y.skein && <><dt>Skein</dt><dd>{y.skein}</dd></>}
-                      {y.quantity && <><dt>On hand</dt><dd>{y.quantity}</dd></>}
                     </dl>
                   )}
 
@@ -282,7 +277,7 @@ export default function YarnsPage() {
               </div>
             </div>
 
-            <div className={styles.grid3}>
+            <div className={styles.grid2}>
               <div>
                 <FormLabel htmlFor="y-hook">Hook / needle size</FormLabel>
                 <Input id="y-hook" placeholder="e.g. 4.5mm / G-7" value={draft.hook} onChange={update('hook')} />
@@ -290,10 +285,6 @@ export default function YarnsPage() {
               <div>
                 <FormLabel htmlFor="y-skein">Skein weight &amp; length</FormLabel>
                 <Input id="y-skein" placeholder="e.g. 100g / 150m" value={draft.skein} onChange={update('skein')} />
-              </div>
-              <div>
-                <FormLabel htmlFor="y-qty">Quantity on hand</FormLabel>
-                <Input id="y-qty" placeholder="e.g. 2 skeins" value={draft.quantity} onChange={update('quantity')} />
               </div>
             </div>
 

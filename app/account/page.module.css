@@ -47,7 +47,7 @@
 
 .saveBtn {
   align-self: flex-start;
-  padding: 0.4375rem 1rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 500;
   background-color: var(--color-accent);
