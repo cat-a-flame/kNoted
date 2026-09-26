@@ -1,0 +1,37 @@
+{
+  "format": "knoted-pattern",
+  "version": 1,
+  "pattern": {
+    "name": "Little Pumpkin",
+    "designer": "kNoted sample",
+    "hook_size": "4.5 mm",
+    "yarn_summary": "Worsted #4 cotton",
+    "worked_in": "rounds"
+  },
+  "yarns": [
+    { "key": "orange", "colour_name": "Orange", "colour_hex": "#E8761E", "used_for": "Body" },
+    { "key": "green", "colour_name": "Leaf Green", "colour_hex": "#5E8C3A", "used_for": "Stem and leaf" }
+  ],
+  "steps": [
+    { "name": null, "note": "Work into a magic ring.", "yarn": "orange", "stitch_unit": ["sc"], "repeat_count": 6, "end_count": 6, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["inc"], "repeat_count": 6, "end_count": 12, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "inc"], "repeat_count": 6, "end_count": 18, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "inc"], "repeat_count": 6, "end_count": 24, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "inc"], "repeat_count": 6, "end_count": 30, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "sc", "inc"], "repeat_count": 6, "end_count": 36, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "sc", "sc", "inc"], "repeat_count": 6, "end_count": 42, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "sc", "sc", "sc", "inc"], "repeat_count": 6, "end_count": 48, "times": 1 },
+    { "name": null, "note": "R9–19.", "yarn": "orange", "stitch_unit": ["sc"], "repeat_count": 48, "end_count": 48, "times": 11 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "sc", "sc", "sc", "dec"], "repeat_count": 6, "end_count": 42, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "sc", "sc", "dec"], "repeat_count": 6, "end_count": 36, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "sc", "dec"], "repeat_count": 6, "end_count": 30, "times": 1 },
+    { "name": null, "note": "Start stuffing.", "yarn": "orange", "stitch_unit": ["sc", "sc", "sc", "dec"], "repeat_count": 6, "end_count": 24, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "sc", "dec"], "repeat_count": 6, "end_count": 18, "times": 1 },
+    { "name": null, "yarn": "orange", "stitch_unit": ["sc", "dec"], "repeat_count": 6, "end_count": 12, "times": 1 },
+    { "name": null, "note": "Stuff firmly, then fasten off and close the hole, leaving a long tail.", "yarn": "orange", "stitch_unit": ["dec"], "repeat_count": 6, "end_count": 6, "times": 1 },
+    { "name": "Shape segment", "note": "Take the tail from the bottom up through the centre, around the outside and back through the centre. Pull tight to make one groove.", "yarn": "orange", "stitch_unit": [], "repeat_count": 1, "end_count": null, "times": 6 },
+    { "name": "Stem", "note": "With green, 6 sc in a magic ring, then sc around.", "yarn": "green", "stitch_unit": ["sc"], "repeat_count": 6, "end_count": 6, "times": 3 },
+    { "name": "Leaf", "note": "Ch 8. Starting in the 2nd ch from the hook: sl st, sc, hdc, dc, dc, hdc, sc. Fasten off.", "yarn": "green", "stitch_unit": [], "repeat_count": 1, "end_count": null, "times": 1 },
+    { "name": "Finishing", "note": "Sew the stem to the top of the pumpkin and the leaf next to it. Weave in the ends.", "stitch_unit": [], "repeat_count": 1, "end_count": null, "times": 1 }
+  ]
+}
