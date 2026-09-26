@@ -30,6 +30,7 @@ create table public.yarns (
   quantity    text,
   care        text,
   notes       text,
+  image_path  text,                          -- storage path in the "yarn-images" bucket (see 003_yarn_images.sql)
   created_at  timestamptz not null default now()
 );
 
@@ -128,6 +129,7 @@ $$;
 
 -- 7. Storage --------------------------------------------------
 -- Pattern images use the "pattern-images" bucket, created by
--- 002_pattern_images.sql — run that file next.
+-- 002_pattern_images.sql, and yarn images the "yarn-images" bucket,
+-- created by 003_yarn_images.sql — run those files next.
 -- The v1 "pattern-covers" bucket is no longer used; you can empty and
 -- delete it from the dashboard (Storage → pattern-covers → Delete bucket).

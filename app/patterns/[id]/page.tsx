@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 import { createClient } from '@/lib/supabase/client';
 import type { Pattern, Yarn } from '@/lib/types';
@@ -17,6 +17,7 @@ import { AppFooter } from '@/components/layout/AppFooter';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { CoverPlaceholder } from '@/components/ui/CoverPlaceholder';
 import { Toast } from '@/components/ui/Toast';
+import { PatternEditor } from '@/components/patterns/PatternEditor';
 import { CheckIcon, ChevronLeftIcon, CloseIcon, ExpandIcon, MinusIcon, PlusIcon } from '@/components/ui/icons';
 import styles from './page.module.css';
 
@@ -26,31 +27,41 @@ type Progress = { step: number; stitch: number; startedAt: string | null; finish
 
 export default function WorkspacePage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [yarns, setYarns] = useState<Pick<Yarn, 'id' | 'colour_hex' | 'colour_name'>[]>([]);
   const [progress, setProgress] = useState<Progress>({ step: 0, stitch: 0, startedAt: null, finishedAt: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageOpen, setImageOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const activeRowRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      const supabase = createClient();
-      const [{ data: p, error: pErr }, { data: y }] = await Promise.all([
-        supabase.from('patterns').select('*, pattern_steps(*)').eq('id', id).single(),
-        supabase.from('yarns').select('id, colour_hex, colour_name'),
-      ]);
-      if (pErr) setError(pErr.message);
-      if (p) {
-        setPattern(p as Pattern);
-        setProgress({ step: p.current_step, stitch: p.current_stitch, startedAt: p.started_at, finishedAt: p.finished_at });
-      }
-      setYarns(y ?? []);
-      setLoading(false);
-    };
-    load();
+  const load = useCallback(async () => {
+    const supabase = createClient();
+    const [{ data: p, error: pErr }, { data: y }] = await Promise.all([
+      supabase.from('patterns').select('*, pattern_steps(*)').eq('id', id).single(),
+      supabase.from('yarns').select('id, colour_hex, colour_name'),
+    ]);
+    if (pErr) setError(pErr.message);
+    if (p) {
+      setPattern(p as Pattern);
+      setProgress({ step: p.current_step, stitch: p.current_stitch, startedAt: p.started_at, finishedAt: p.finished_at });
+    }
+    setYarns(y ?? []);
+    setLoading(false);
   }, [id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // /patterns/[id]/edit redirects here with ?edit so old links still open the form.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('edit')) {
+      setEditing(true);
+      router.replace(`/patterns/${id}`);
+    }
+  }, [id, router]);
 
   const steps = useMemo(
     () => (pattern ? expandSteps(pattern.pattern_steps ?? [], yarns, pattern.worked_in) : []),
@@ -73,6 +84,12 @@ export default function WorkspacePage() {
   }, 600);
 
   useEffect(() => () => { persist.flush(); }, [persist]);
+
+  const openEditor = () => {
+    // Write any pending count first so the editor's save doesn't race it.
+    persist.flush();
+    setEditing(true);
+  };
 
   const commit = useCallback(
     (patch: Partial<Progress>) => {
@@ -127,6 +144,7 @@ export default function WorkspacePage() {
   // Handled even when a button has focus, so clicking a step and then pressing space counts.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (editing) return;
       if (imageOpen) {
         if (e.key === 'Escape') setImageOpen(false);
         return;
@@ -147,7 +165,7 @@ export default function WorkspacePage() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [inc, dec, advance, stepComplete, countable, finished, imageOpen]);
+  }, [inc, dec, advance, stepComplete, countable, finished, imageOpen, editing]);
 
   useEffect(() => {
     activeRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -204,7 +222,7 @@ export default function WorkspacePage() {
               {meta && <span className={styles.titleMeta}>{meta}</span>}
             </div>
             <button onClick={exportPattern} className={styles.editBtn} title="Download as a .knoted.json file">Export</button>
-            <Link href={`/patterns/${pattern.id}/edit`} className={styles.editBtn}>Edit</Link>
+            <button onClick={openEditor} className={styles.editBtn}>Edit</button>
           </div>
         </div>
 
@@ -214,7 +232,7 @@ export default function WorkspacePage() {
             <div className={styles.stepsCol}>
               {steps.length === 0 ? (
                 <p className={styles.emptyState}>
-                  No steps yet. <Link href={`/patterns/${pattern.id}/edit`} className={styles.backLink}>Add rounds and steps</Link>
+                  No steps yet. <button onClick={openEditor} className={styles.backLink}>Add rounds and steps</button>
                 </p>
               ) : (
                 <div className={styles.stepList}>
@@ -431,6 +449,21 @@ export default function WorkspacePage() {
         </div>
       )}
 
+      {editing && (
+        <PatternEditor
+          patternId={pattern.id}
+          onClose={() => setEditing(false)}
+          onSaved={async () => {
+            await load();
+            setEditing(false);
+            setToast('Pattern saved.');
+          }}
+          onDeleted={() => router.push('/patterns')}
+          onReset={() => setProgress({ step: 0, stitch: 0, startedAt: null, finishedAt: null })}
+        />
+      )}
+
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
       {error && <Toast message={error} variant="error" onDismiss={() => setError(null)} />}
     </div>
   );
