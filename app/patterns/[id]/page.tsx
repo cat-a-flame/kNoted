@@ -10,6 +10,7 @@ import { STITCHES } from '@/lib/stitches';
 import { expandSteps, progressFraction, stepSubtitle, usedStitches } from '@/lib/track';
 import { clamp, patternMeta } from '@/lib/utils';
 import { patternImageUrl } from '@/lib/images';
+import { buildExport, slug } from '@/lib/import';
 import { StitchLayout } from '@/components/workspace/StitchLayout';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppFooter } from '@/components/layout/AppFooter';
@@ -108,6 +109,18 @@ export default function WorkspacePage() {
     else commit({ step: idx + 1, stitch: 0 });
   }, [isLast, idx, commit]);
 
+  const exportPattern = () => {
+    if (!pattern) return;
+    const file = buildExport(pattern, pattern.pattern_steps ?? [], yarns);
+    const blob = new Blob([JSON.stringify(file, null, 2) + '\n'], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug(pattern.name) || 'pattern'}.knoted.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const jumpTo = (i: number) => commit({ step: i, stitch: 0, finishedAt: null });
 
   // Keyboard: space / + / → adds a stitch, − / ← / backspace removes one, enter moves on.
@@ -190,6 +203,7 @@ export default function WorkspacePage() {
               <h1 className={styles.titleText}>{pattern.name}</h1>
               {meta && <span className={styles.titleMeta}>{meta}</span>}
             </div>
+            <button onClick={exportPattern} className={styles.editBtn} title="Download as a .knoted.json file">Export</button>
             <Link href={`/patterns/${pattern.id}/edit`} className={styles.editBtn}>Edit</Link>
           </div>
         </div>
