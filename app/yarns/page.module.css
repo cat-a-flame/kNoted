@@ -32,7 +32,7 @@
 }
 
 .addBtn {
-  padding: 0.375rem 0.875rem;
+  padding: 0.5rem 1.125rem;
   font-size: 0.8125rem;
   font-weight: 500;
   background-color: var(--color-accent);
@@ -52,8 +52,7 @@
   gap: 0.875rem;
 }
 
-.grid2,
-.grid3 {
+.grid2 {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.75rem;
@@ -62,10 +61,6 @@
 @media (min-width: 640px) {
   .grid2 {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .grid3 {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -143,6 +138,7 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  background-color: #fff;
   display: block;
 }
 

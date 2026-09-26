@@ -20,11 +20,12 @@ export const STITCHES: Record<StitchType, StitchInfo> = {
   hdc: { abbr: 'hdc', label: 'Half double crochet', produces: 1, strong: '#B08A3E', light: '#F1E6CC', chipBg: '#F4EBD6', chipFg: '#7A5C1E' },
   dc: { abbr: 'dc', label: 'Double crochet', produces: 1, strong: '#6F8296', light: '#DFE5EB', chipBg: '#E4E9EE', chipFg: '#465566' },
   tr: { abbr: 'tr', label: 'Treble crochet', produces: 1, strong: '#4F8A8B', light: '#DCEBEB', chipBg: '#E1EEEE', chipFg: '#2F5E5F' },
+  dtr: { abbr: 'dtr', label: 'Double treble crochet', produces: 1, strong: '#3E6E8C', light: '#D6E4EE', chipBg: '#DEEAF2', chipFg: '#28506A' },
   ch: { abbr: 'ch', label: 'Chain', produces: 1, strong: '#B0AEA5', light: '#EEEDE8', chipBg: '#F1F0EC', chipFg: '#6B675E' },
   slst: { abbr: 'sl st', label: 'Slip stitch', produces: 1, strong: '#5B5347', light: '#E3DED6', chipBg: '#E8E3DB', chipFg: '#332A22' },
 };
 
-export const STITCH_ORDER: StitchType[] = ['sc', 'inc', 'dec', 'hdc', 'dc', 'tr', 'ch', 'slst'];
+export const STITCH_ORDER: StitchType[] = ['sc', 'inc', 'dec', 'hdc', 'dc', 'tr', 'dtr', 'ch', 'slst'];
 
 /** "2 single crochet, then 1 increase" — consecutive identical stitches are grouped. */
 export function describeUnit(unit: StitchType[]): string {

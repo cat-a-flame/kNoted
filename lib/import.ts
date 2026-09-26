@@ -203,7 +203,7 @@ export function parsePattern(input: unknown): ParseResult {
 }
 
 /** Stitches of the previous round each action works into. */
-const CONSUMES: Record<StitchType, number> = { sc: 1, hdc: 1, dc: 1, tr: 1, inc: 1, dec: 2, ch: 0, slst: 1 };
+const CONSUMES: Record<StitchType, number> = { sc: 1, hdc: 1, dc: 1, tr: 1, dtr: 1, inc: 1, dec: 2, ch: 0, slst: 1 };
 
 export type StepWarning = { step: number; message: string };
 

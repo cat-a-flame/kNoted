@@ -44,7 +44,7 @@ Rules: `stitch_unit` values must be in the existing `StitchType` list. `times` �
 2. **Load**: file picker (and a paste-JSON textarea as a fallback). Parse client-side.
 3. **Validate** (pure function in `lib/import.ts`, unit-testable):
    - Schema check: required fields, allowed stitch types, positive integers. Hard errors block import.
-   - Stitch-count check, walking the numbered rounds in order: `made = Σ produces × repeat` should equal `end_count`, and `used = Σ consumes × repeat` should equal the previous round's `end_count` (consumes: sc/hdc/dc/tr/inc = 1, dec = 2, ch = 0). Mismatches are **warnings**, shown next to the step, not blockers. Patterns have typos and special stitches (e.g. "3 sc in the same stitch"), so the user decides.
+   - Stitch-count check, walking the numbered rounds in order: `made = Σ produces × repeat` should equal `end_count`, and `used = Σ consumes × repeat` should equal the previous round's `end_count` (consumes: sc/hdc/dc/tr/dtr/inc = 1, dec = 2, ch = 0). Mismatches are **warnings**, shown next to the step, not blockers. Patterns have typos and special stitches (e.g. "3 sc in the same stitch"), so the user decides.
 4. **Map yarns**: for each entry in `yarns`, let the user pick a stash yarn (pre-select one whose colour name matches, case-insensitive), create a new stash yarn from the file's name/hex, or leave unassigned.
 5. **Preview**: render the expanded list with `expandSteps()` so the user sees exactly what the tracker will show (Round 1…26, "Shape segment (1)…(6)", etc.), plus the warnings.
 6. **Save**: insert into `patterns`, then call the existing `replace_pattern_steps` RPC with the mapped `yarn_id`s. Redirect to `/patterns/[id]`.
