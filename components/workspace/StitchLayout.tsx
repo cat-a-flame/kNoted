@@ -57,7 +57,7 @@ function Ring({ unit, actionsTotal, stitchesMade, title }: Omit<Props, 'shape'>)
   return (
     <div className={styles.ring}>
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className={styles.ringSvg} role="img" aria-label={`${stitchesMade} of ${actionsTotal} stitches made`}>
-        <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke="#EFEBE3" strokeWidth="1" />
+        <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke="var(--color-surface-3)" strokeWidth="1" />
         {Array.from({ length: actionsTotal }, (_, i) => {
           const angle = -Math.PI / 2 + (i / actionsTotal) * Math.PI * 2;
           const m = markStyle(unit, i, stitchesMade, baseR);

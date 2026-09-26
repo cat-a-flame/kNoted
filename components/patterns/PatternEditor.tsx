@@ -7,25 +7,26 @@ import { createClient } from '@/lib/supabase/client';
 import type { Pattern, StitchType, WorkedIn, Yarn } from '@/lib/types';
 import { STITCHES, STITCH_ORDER, instructionText, suggestedEndCount } from '@/lib/stitches';
 import { patternImageUrl, removePatternImage, uploadPatternImage } from '@/lib/images';
-import { AppTabs } from '@/components/layout/AppTabs';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppFooter } from '@/components/layout/AppFooter';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Toast } from '@/components/ui/Toast';
-import { PatternImageField } from './PatternImageField';
-import { BackspaceIcon, ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon, CloseIcon, CopyIcon, PlusIcon } from '@/components/ui/icons';
+import { ArrowDownIcon, ArrowUpIcon, BackspaceIcon, ChevronUpIcon, CloseIcon, CopyIcon, PencilIcon } from '@/components/ui/icons';
 import buttons from '@/components/ui/buttons.module.css';
+import { PatternImageField } from './PatternImageField';
 import styles from './PatternEditor.module.css';
 
 type DraftStep = {
   key: string;
-  named: boolean;
-  name: string;
+  /** Empty = numbered automatically ("Round 5"). */
+  title: string;
   note: string;
   yarnId: string;
   unit: StitchType[];
   repeat: string;
-  /** Empty string = use the suggested count. */
+  /** Empty = use the suggested count. */
   end: string;
   times: string;
 };
@@ -33,17 +34,26 @@ type DraftStep = {
 let keySeq = 0;
 const newKey = () => `s${++keySeq}`;
 
-const blankStep = (named: boolean, yarnId = ''): DraftStep => ({
+const blankRound = (yarnId = ''): DraftStep => ({
   key: newKey(),
-  named,
-  name: '',
+  title: '',
   note: '',
   yarnId,
-  unit: named ? [] : ['sc'],
+  unit: ['sc'],
   repeat: '6',
   end: '',
   times: '1',
 });
+
+const blankNoteStep = (): DraftStep => ({ ...blankRound(), title: 'Finishing', unit: [], repeat: '1' });
+
+/** Pattern-style shorthand, e.g. "(sc, inc) ×3". */
+function shorthand(unit: StitchType[], repeat: number): string {
+  if (unit.length === 0) return 'Nothing to count';
+  const abbrs = unit.map((t) => STITCHES[t].abbr);
+  const group = unit.length === 1 ? abbrs[0] : `(${abbrs.join(', ')})`;
+  return repeat > 1 ? `${group} ×${repeat}` : group;
+}
 
 const toInt = (v: string, fallback: number) => {
   const n = parseInt(v, 10);
@@ -60,7 +70,9 @@ export function PatternEditor({ patternId }: Props) {
   const [hookSize, setHookSize] = useState('');
   const [yarnSummary, setYarnSummary] = useState('');
   const [workedIn, setWorkedIn] = useState<WorkedIn>('rounds');
-  const [steps, setSteps] = useState<DraftStep[]>(() => [blankStep(false)]);
+  const [steps, setSteps] = useState<DraftStep[]>(() => [blankRound()]);
+  /** Cards shown in full; the rest collapse to a one-line summary. */
+  const [openKeys, setOpenKeys] = useState<Set<string>>(() => new Set());
   const [yarns, setYarns] = useState<Yarn[]>([]);
   /** Path already saved on the pattern. */
   const [imagePath, setImagePath] = useState<string | null>(null);
@@ -74,6 +86,12 @@ export function PatternEditor({ patternId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<'delete' | 'reset' | null>(null);
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (!patternId) setOpenKeys(new Set(steps.slice(0, 1).map((s) => s.key)));
+    // Only on mount: open the starter card of a new pattern.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -97,8 +115,7 @@ export function PatternEditor({ patternId }: Props) {
         setSteps(
           sorted.map((s) => ({
             key: newKey(),
-            named: !!s.name,
-            name: s.name ?? '',
+            title: s.name ?? '',
             note: s.note ?? '',
             yarnId: s.yarn_id ?? '',
             unit: s.stitch_unit ?? [],
@@ -120,19 +137,20 @@ export function PatternEditor({ patternId }: Props) {
 
   const imageSrc = imageChange === null ? null : imagePreview ?? patternImageUrl(imagePath);
 
-  const unitWord = workedIn === 'rounds' ? 'Round' : 'Row';
+  const unitWord = workedIn === 'rounds' ? 'round' : 'row';
+  const UnitWord = workedIn === 'rounds' ? 'Round' : 'Row';
 
-  // "Round 3" / "Rounds 13–21" labels, following the same numbering as the tracker.
-  const numberLabels = useMemo(() => {
+  // "Round 3" / "Rounds 13–21" — the same numbering the tracker uses. Titled steps aren't numbered.
+  const autoLabels = useMemo(() => {
     let n = 0;
     return steps.map((s) => {
-      if (s.named) return null;
-      const times = toInt(s.times, 1);
+      if (s.title.trim()) return null;
+      const times = s.unit.length ? toInt(s.times, 1) : 1;
       const first = n + 1;
       n += times;
-      return times > 1 ? `${unitWord}s ${first}–${n}` : `${unitWord} ${first}`;
+      return times > 1 ? `${UnitWord}s ${first}–${n}` : `${UnitWord} ${first}`;
     });
-  }, [steps, unitWord]);
+  }, [steps, UnitWord]);
 
   const updateStep = (key: string, patch: Partial<DraftStep>) =>
     setSteps((prev) => prev.map((s) => (s.key === key ? { ...s, ...patch } : s)));
@@ -146,19 +164,31 @@ export function PatternEditor({ patternId }: Props) {
       return next;
     });
 
-  const duplicateStep = (i: number) =>
-    setSteps((prev) => [...prev.slice(0, i + 1), { ...prev[i], key: newKey() }, ...prev.slice(i + 1)]);
+  const duplicateStep = (i: number) => {
+    const copy = { ...steps[i], key: newKey() };
+    setSteps((prev) => [...prev.slice(0, i + 1), copy, ...prev.slice(i + 1)]);
+    setOpenKeys(new Set([copy.key]));
+  };
 
   const removeStep = (i: number) => setSteps((prev) => prev.filter((_, j) => j !== i));
 
-  const addStep = (named: boolean) =>
-    setSteps((prev) => [...prev, blankStep(named, prev[prev.length - 1]?.yarnId ?? '')]);
+  const toggleOpen = (key: string) =>
+    setOpenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  /** Adds a card, opens it and closes the others so the new one is the focus. */
+  const addStep = (step: DraftStep) => {
+    setSteps((prev) => [...prev, step]);
+    setOpenKeys(new Set([step.key]));
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { setError('Give the pattern a name.'); return; }
-    const unnamed = steps.findIndex((s) => s.named && !s.name.trim());
-    if (unnamed !== -1) { setError(`Step ${unnamed + 1} needs a name.`); return; }
     setError(null);
     setSaving(true);
 
@@ -187,7 +217,7 @@ export function PatternEditor({ patternId }: Props) {
       const repeat = countable ? toInt(s.repeat, 1) : 1;
       const end = s.end.trim() === '' ? suggestedEndCount(s.unit, repeat) : parseInt(s.end, 10);
       return {
-        name: s.named ? s.name.trim() : null,
+        name: s.title.trim() || null,
         note: s.note.trim() || null,
         yarn_id: s.yarnId || null,
         stitch_unit: s.unit,
@@ -241,216 +271,225 @@ export function PatternEditor({ patternId }: Props) {
     setToast(error ? { message: error.message, variant: 'error' } : { message: 'Progress reset.', variant: 'success' });
   };
 
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <AppTabs />
-        <p className={styles.muted}>Loading pattern…</p>
-      </div>
-    );
-  }
+  const cancelHref = isEdit ? `/patterns/${patternId}` : '/patterns';
 
   return (
-    <div className={styles.page}>
-      <AppTabs />
+    <div className="appShell">
+      <AppHeader />
 
-      <header className={styles.header}>
-        <Link href={isEdit ? `/patterns/${patternId}` : '/patterns'} className={styles.backLink}>
-          <ChevronLeftIcon size={14} /> {isEdit ? 'Back to pattern' : 'Patterns'}
-        </Link>
-        <h1 className={styles.title}>{isEdit ? 'Edit pattern' : 'New pattern'}</h1>
-      </header>
+      <main className={styles.main}>
+        <h1 className={styles.pageTitle}>{isEdit ? 'Edit pattern' : 'New pattern'}</h1>
 
-      <form onSubmit={handleSave} className={styles.body}>
-        <section className={styles.card}>
-          <div>
-            <FormLabel htmlFor="p-name">Pattern name</FormLabel>
-            <Input id="p-name" placeholder="e.g. Little Pumpkin" value={name} onChange={(e) => setName(e.target.value)} autoFocus={!isEdit} />
-          </div>
-          <div>
-            <FormLabel>Image (optional)</FormLabel>
-            <PatternImageField
-              src={imageSrc}
-              onPick={(file) => setImageChange(file)}
-              onRemove={() => setImageChange(imagePath ? null : undefined)}
-              onError={(message) => setToast({ message, variant: 'error' })}
-            />
-          </div>
-          <div className={styles.grid3}>
-            <div>
-              <FormLabel htmlFor="p-hook">Hook size</FormLabel>
-              <Input id="p-hook" placeholder="e.g. 4.5mm" value={hookSize} onChange={(e) => setHookSize(e.target.value)} />
-            </div>
-            <div>
-              <FormLabel htmlFor="p-yarn">Yarn</FormLabel>
-              <Input id="p-yarn" placeholder="e.g. cotton yarn" value={yarnSummary} onChange={(e) => setYarnSummary(e.target.value)} />
-            </div>
-            <div>
-              <FormLabel>Worked in</FormLabel>
-              <div className={styles.segmented} role="radiogroup" aria-label="Worked in">
-                {(['rounds', 'rows'] as WorkedIn[]).map((w) => (
-                  <button
-                    key={w}
-                    type="button"
-                    role="radio"
-                    aria-checked={workedIn === w}
-                    onClick={() => setWorkedIn(w)}
-                    className={`${styles.segment} ${workedIn === w ? styles.segmentActive : ''}`}
-                  >
-                    {w === 'rounds' ? 'Rounds' : 'Rows'}
-                  </button>
-                ))}
+        {loading ? (
+          <p className={styles.muted}>Loading pattern…</p>
+        ) : (
+          <form onSubmit={handleSave} className={styles.form}>
+            {/* ── Pattern details ── */}
+            <section className={styles.card}>
+              <div className={styles.field}>
+                <FormLabel htmlFor="p-name">Pattern name</FormLabel>
+                <Input id="p-name" placeholder="e.g. Little Pumpkin" value={name} onChange={(e) => setName(e.target.value)} autoFocus={!isEdit} />
               </div>
-            </div>
-          </div>
-        </section>
-
-        <div className={styles.stepsHeader}>
-          <h2 className={styles.sectionTitle}>Steps</h2>
-          <p className={styles.muted}>
-            Build each {unitWord.toLowerCase()} from its repeat group — e.g. <em>sc, sc, inc</em> × 6. Leave the group empty for steps with nothing to count.
-          </p>
-        </div>
-
-        {steps.map((s, i) => {
-          const repeat = toInt(s.repeat, 1);
-          const suggested = suggestedEndCount(s.unit, repeat);
-          const preview = instructionText(s.unit, workedIn);
-          const yarn = yarns.find((y) => y.id === s.yarnId);
-          return (
-            <section key={s.key} className={styles.stepCard}>
-              <div className={styles.stepTop}>
-                <div className={styles.stepLabel}>
-                  <span className={styles.yarnDot} style={{ background: yarn?.colour_hex ?? '#DEDCD1' }} />
-                  {s.named ? s.name.trim() || 'Named step' : numberLabels[i]}
+              <div className={styles.detailGrid}>
+                <div className={styles.field}>
+                  <FormLabel htmlFor="p-hook">Hook size</FormLabel>
+                  <Input id="p-hook" placeholder="e.g. 4.5mm" value={hookSize} onChange={(e) => setHookSize(e.target.value)} />
                 </div>
-                <div className={styles.stepTools}>
-                  <button type="button" className={buttons.iconRound} onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label="Move step up"><ChevronUpIcon size={14} /></button>
-                  <button type="button" className={buttons.iconRound} onClick={() => moveStep(i, 1)} disabled={i === steps.length - 1} aria-label="Move step down"><ChevronDownIcon size={14} /></button>
-                  <button type="button" className={buttons.iconRound} onClick={() => duplicateStep(i)} aria-label="Duplicate step"><CopyIcon size={14} /></button>
-                  <button type="button" className={buttons.iconRound} onClick={() => removeStep(i)} aria-label="Remove step"><CloseIcon size={14} /></button>
+                <div className={styles.field}>
+                  <FormLabel htmlFor="p-yarn">Yarn</FormLabel>
+                  <Input id="p-yarn" placeholder="e.g. cotton yarn" value={yarnSummary} onChange={(e) => setYarnSummary(e.target.value)} />
+                </div>
+                <div className={styles.field}>
+                  <FormLabel htmlFor="p-worked">Worked in</FormLabel>
+                  <Select id="p-worked" value={workedIn} onChange={(e) => setWorkedIn(e.target.value as WorkedIn)}>
+                    <option value="rounds">Rounds</option>
+                    <option value="rows">Rows</option>
+                  </Select>
                 </div>
               </div>
-
-              <div className={styles.grid2}>
-                <div>
-                  <FormLabel>Type</FormLabel>
-                  <div className={styles.segmented}>
-                    <button type="button" onClick={() => updateStep(s.key, { named: false })} className={`${styles.segment} ${!s.named ? styles.segmentActive : ''}`}>
-                      Numbered {unitWord.toLowerCase()}
-                    </button>
-                    <button type="button" onClick={() => updateStep(s.key, { named: true })} className={`${styles.segment} ${s.named ? styles.segmentActive : ''}`}>
-                      Named step
-                    </button>
-                  </div>
-                </div>
-                {s.named ? (
-                  <div>
-                    <FormLabel htmlFor={`${s.key}-name`}>Name</FormLabel>
-                    <Input id={`${s.key}-name`} placeholder="e.g. Leaf (optional), Finishing" value={s.name} onChange={(e) => updateStep(s.key, { name: e.target.value })} />
-                  </div>
-                ) : (
-                  <div>
-                    <FormLabel htmlFor={`${s.key}-yarn`}>Yarn</FormLabel>
-                    <YarnSelect id={`${s.key}-yarn`} yarns={yarns} value={s.yarnId} onChange={(v) => updateStep(s.key, { yarnId: v })} />
-                  </div>
-                )}
+              <div className={styles.field}>
+                <FormLabel>Image (optional)</FormLabel>
+                <PatternImageField
+                  src={imageSrc}
+                  onPick={(file) => setImageChange(file)}
+                  onRemove={() => setImageChange(imagePath ? null : undefined)}
+                  onError={(message) => setToast({ message, variant: 'error' })}
+                />
               </div>
-
-              {s.named && (
-                <div>
-                  <FormLabel htmlFor={`${s.key}-yarn`}>Yarn</FormLabel>
-                  <YarnSelect id={`${s.key}-yarn`} yarns={yarns} value={s.yarnId} onChange={(v) => updateStep(s.key, { yarnId: v })} />
-                </div>
-              )}
-
-              <div>
-                <FormLabel>Repeat group</FormLabel>
-                <div className={styles.unitBox}>
-                  {s.unit.length === 0 ? (
-                    <span className={styles.unitEmpty}>Nothing to count</span>
-                  ) : (
-                    s.unit.map((t, ti) => (
-                      <button
-                        key={ti}
-                        type="button"
-                        title="Remove"
-                        onClick={() => updateStep(s.key, { unit: s.unit.filter((_, k) => k !== ti) })}
-                        className={styles.chip}
-                        style={{ background: STITCHES[t].chipBg, color: STITCHES[t].chipFg }}
-                      >
-                        {STITCHES[t].abbr}
-                      </button>
-                    ))
-                  )}
-                  {s.unit.length > 0 && (
-                    <button type="button" className={`${buttons.iconRound} ${styles.unitBackspace}`} onClick={() => updateStep(s.key, { unit: s.unit.slice(0, -1) })} aria-label="Remove last stitch">
-                      <BackspaceIcon size={15} />
-                    </button>
-                  )}
-                </div>
-                <div className={styles.palette}>
-                  {STITCH_ORDER.map((t) => (
-                    <button key={t} type="button" onClick={() => updateStep(s.key, { unit: [...s.unit, t] })} className={styles.paletteBtn} title={STITCHES[t].label}>
-                      <PlusIcon size={11} /> {STITCHES[t].abbr}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {s.unit.length > 0 && (
-                <div className={styles.grid3}>
-                  <div>
-                    <FormLabel htmlFor={`${s.key}-rep`}>Repeat group ×</FormLabel>
-                    <Input id={`${s.key}-rep`} type="number" min={1} inputMode="numeric" value={s.repeat} onChange={(e) => updateStep(s.key, { repeat: e.target.value })} />
-                  </div>
-                  <div>
-                    <FormLabel htmlFor={`${s.key}-end`}>Ends with (stitches)</FormLabel>
-                    <Input id={`${s.key}-end`} type="number" min={0} inputMode="numeric" placeholder={suggested != null ? String(suggested) : ''} value={s.end} onChange={(e) => updateStep(s.key, { end: e.target.value })} />
-                  </div>
-                  <div>
-                    <FormLabel htmlFor={`${s.key}-times`}>Identical {s.named ? 'steps' : `${unitWord.toLowerCase()}s`} in a row</FormLabel>
-                    <Input id={`${s.key}-times`} type="number" min={1} inputMode="numeric" value={s.times} onChange={(e) => updateStep(s.key, { times: e.target.value })} />
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <FormLabel htmlFor={`${s.key}-note`}>Note (optional)</FormLabel>
-                <Textarea id={`${s.key}-note`} rows={2} placeholder="e.g. Work into a magic ring. / Stuff firmly once this round is done." value={s.note} onChange={(e) => updateStep(s.key, { note: e.target.value })} />
-              </div>
-
-              {(preview || s.note.trim()) && (
-                <p className={styles.preview}>
-                  {[s.note.trim(), preview].filter(Boolean).join(' ')}
-                  {s.unit.length > 0 && repeat > 1 && <span className={styles.previewMeta}> × {repeat}</span>}
-                </p>
-              )}
             </section>
-          );
-        })}
 
-        <div className={styles.addRow}>
-          <button type="button" onClick={() => addStep(false)} className={styles.addBtn}><PlusIcon size={14} /> Add {unitWord.toLowerCase()}</button>
-          <button type="button" onClick={() => addStep(true)} className={styles.addBtn}><PlusIcon size={14} /> Add named step</button>
-        </div>
-
-        <div className={styles.footer}>
-          {isEdit && (
-            <div className={styles.footerLeft}>
-              <button type="button" onClick={() => setConfirm('reset')} className={buttons.ghost}>Reset progress</button>
-              <button type="button" onClick={() => setConfirm('delete')} className={buttons.danger}>Delete pattern</button>
+            {/* ── Steps ── */}
+            <div>
+              <h2 className={styles.sectionTitle}>{UnitWord}s</h2>
+              <p className={styles.help}>
+                One card per line of the pattern — click a card to edit it. For <em>“R6: (sc, inc) ×3 (9)”</em> pick <strong>sc</strong>,{' '}
+                <strong>inc</strong> and set “Repeat” to 3.
+              </p>
             </div>
-          )}
-          <div className={styles.footerRight}>
-            {error && <p className={styles.error}>{error}</p>}
-            <Link href={isEdit ? `/patterns/${patternId}` : '/patterns'} className={buttons.ghost}>Cancel</Link>
-            <button type="submit" disabled={saving} className={buttons.primary}>
-              {saving ? 'Saving…' : isEdit ? 'Save pattern' : 'Create pattern'}
-            </button>
-          </div>
-        </div>
-      </form>
+
+            <div className={styles.stepList}>
+              {steps.map((s, i) => {
+                const countable = s.unit.length > 0;
+                const repeat = toInt(s.repeat, 1);
+                const suggested = suggestedEndCount(s.unit, repeat);
+                const preview = instructionText(s.unit, workedIn);
+                const yarn = yarns.find((y) => y.id === s.yarnId);
+                const label = s.title.trim() || autoLabels[i];
+                const open = openKeys.has(s.key);
+                const endShown = s.end.trim() || suggested;
+                return (
+                  <section key={s.key} className={`${styles.stepCard} ${open ? '' : styles.stepCardClosed}`}>
+                    <div className={`${styles.stepHeader} ${open ? '' : styles.stepHeaderClosed}`}>
+                      <button type="button" className={styles.stepToggle} onClick={() => toggleOpen(s.key)} aria-expanded={open}>
+                        <span className={styles.stepLabel}>
+                          <span className={styles.yarnDot} style={{ background: yarn?.colour_hex ?? 'var(--color-surface-3)' }} />
+                          {label}
+                        </span>
+                        {!open && (
+                          <span className={styles.stepSummary}>
+                            {shorthand(s.unit, repeat)}
+                            {countable && endShown != null && ` → ${endShown} sts`}
+                            {s.note.trim() && <span className={styles.stepSummaryNote}> · {s.note.trim()}</span>}
+                          </span>
+                        )}
+                      </button>
+                      <div className={styles.stepTools}>
+                        <button type="button" className={buttons.icon} onClick={() => toggleOpen(s.key)} aria-label={open ? 'Collapse' : 'Edit'} title={open ? 'Collapse' : 'Edit'}>{open ? <ChevronUpIcon size={14} /> : <PencilIcon size={13} />}</button>
+                        <button type="button" className={buttons.icon} onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label="Move up" title="Move up"><ArrowUpIcon size={14} /></button>
+                        <button type="button" className={buttons.icon} onClick={() => moveStep(i, 1)} disabled={i === steps.length - 1} aria-label="Move down" title="Move down"><ArrowDownIcon size={14} /></button>
+                        <button type="button" className={buttons.icon} onClick={() => duplicateStep(i)} aria-label="Duplicate" title="Duplicate"><CopyIcon size={14} /></button>
+                        <button type="button" className={buttons.iconDanger} onClick={() => removeStep(i)} aria-label="Remove" title="Remove"><CloseIcon size={14} /></button>
+                      </div>
+                    </div>
+
+                    {open && (<>
+                    {/* Stitches */}
+                    <div className={styles.field}>
+                      <FormLabel>Stitches, in the order you work them</FormLabel>
+                      <div className={styles.unitBox}>
+                        {s.unit.length === 0 ? (
+                          <span className={styles.unitEmpty}>No stitches — nothing to count (e.g. finishing or sewing)</span>
+                        ) : (
+                          s.unit.map((t, ti) => (
+                            <button
+                              key={ti}
+                              type="button"
+                              title="Click to remove"
+                              onClick={() => updateStep(s.key, { unit: s.unit.filter((_, k) => k !== ti) })}
+                              className={styles.chip}
+                              style={{ background: STITCHES[t].chipBg, color: STITCHES[t].chipFg }}
+                            >
+                              {STITCHES[t].abbr}
+                            </button>
+                          ))
+                        )}
+                        {s.unit.length > 0 && (
+                          <button type="button" className={`${buttons.icon} ${styles.unitBackspace}`} onClick={() => updateStep(s.key, { unit: s.unit.slice(0, -1) })} aria-label="Remove last stitch" title="Remove last stitch">
+                            <BackspaceIcon size={15} />
+                          </button>
+                        )}
+                      </div>
+                      <div className={styles.palette}>
+                        {STITCH_ORDER.map((t) => (
+                          <button key={t} type="button" onClick={() => updateStep(s.key, { unit: [...s.unit, t] })} className={styles.paletteBtn} title={`Add ${STITCHES[t].label.toLowerCase()}`}>
+                            + {STITCHES[t].abbr}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {countable && (
+                      <div className={styles.numbersGrid}>
+                        <div className={styles.field}>
+                          <FormLabel htmlFor={`${s.key}-rep`}>Repeat</FormLabel>
+                          <div className={styles.inputAffix}>
+                            <span>×</span>
+                            <Input id={`${s.key}-rep`} type="number" min={1} inputMode="numeric" value={s.repeat} onChange={(e) => updateStep(s.key, { repeat: e.target.value })} />
+                          </div>
+                          <p className={styles.hint}>times around the {unitWord}</p>
+                        </div>
+                        <div className={styles.field}>
+                          <FormLabel htmlFor={`${s.key}-end`}>Stitch count at the end</FormLabel>
+                          <Input id={`${s.key}-end`} type="number" min={0} inputMode="numeric" placeholder={suggested != null ? String(suggested) : ''} value={s.end} onChange={(e) => updateStep(s.key, { end: e.target.value })} />
+                          <p className={styles.hint}>{s.end.trim() ? 'Clear to calculate it' : 'Calculated for you'}</p>
+                        </div>
+                        <div className={styles.field}>
+                          <FormLabel htmlFor={`${s.key}-times`}>Same {unitWord} in a row</FormLabel>
+                          <div className={styles.inputAffix}>
+                            <span>×</span>
+                            <Input id={`${s.key}-times`} type="number" min={1} inputMode="numeric" value={s.times} onChange={(e) => updateStep(s.key, { times: e.target.value })} />
+                          </div>
+                          <p className={styles.hint}>e.g. 9 for R13–R21</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={styles.detailGrid2}>
+                      <div className={styles.field}>
+                        <FormLabel htmlFor={`${s.key}-yarn`}>Yarn</FormLabel>
+                        <Select id={`${s.key}-yarn`} value={s.yarnId} onChange={(e) => updateStep(s.key, { yarnId: e.target.value })}>
+                          <option value="">{yarns.length ? 'No yarn' : 'No yarns in your stash yet'}</option>
+                          {yarns.map((y) => (
+                            <option key={y.id} value={y.id}>{y.colour_name} — {y.brand}</option>
+                          ))}
+                        </Select>
+                      </div>
+                      <div className={styles.field}>
+                        <FormLabel htmlFor={`${s.key}-title`}>Title (optional)</FormLabel>
+                        <Input id={`${s.key}-title`} placeholder={autoLabels[i] ?? `e.g. Leaf, Finishing`} value={s.title} onChange={(e) => updateStep(s.key, { title: e.target.value })} />
+                        <p className={styles.hint}>Leave empty to number it automatically</p>
+                      </div>
+                    </div>
+
+                    <div className={styles.field}>
+                      <FormLabel htmlFor={`${s.key}-note`}>Instructions / notes (optional)</FormLabel>
+                      <Textarea id={`${s.key}-note`} rows={2} placeholder="e.g. Work into a magic ring. / Stuff firmly once this round is done." value={s.note} onChange={(e) => updateStep(s.key, { note: e.target.value })} />
+                    </div>
+
+                    {(preview || s.note.trim()) && (
+                      <p className={styles.preview}>
+                        <span className={styles.previewLabel}>Preview</span>
+                        {[s.note.trim(), preview].filter(Boolean).join(' ')}
+                        {countable && repeat > 1 && ` ×${repeat}`}
+                        {countable && endShown != null && ` → ${endShown} sts`}
+                      </p>
+                    )}
+                    </>)}
+                  </section>
+                );
+              })}
+
+              <div className={styles.addRow}>
+                <button type="button" onClick={() => addStep(blankRound(steps[steps.length - 1]?.yarnId ?? ''))} className={styles.addTrigger}>
+                  + Add {unitWord}
+                </button>
+                <button type="button" onClick={() => addStep(blankNoteStep())} className={styles.addTrigger}>
+                  + Add finishing / notes step
+                </button>
+              </div>
+            </div>
+
+            {error && <p className={styles.errorMsg}>{error}</p>}
+
+            <div className={styles.footer}>
+              {isEdit && (
+                <div className={styles.footerLeft}>
+                  <button type="button" onClick={() => setConfirm('reset')} className={buttons.secondary}>Reset progress</button>
+                  <button type="button" onClick={() => setConfirm('delete')} className={buttons.danger}>Delete</button>
+                </div>
+              )}
+              <div className={styles.footerRight}>
+                <Link href={cancelHref} className={buttons.secondary}>Cancel</Link>
+                <button type="submit" disabled={saving} className={buttons.primary}>
+                  {saving ? 'Saving…' : isEdit ? 'Save pattern' : 'Create pattern'}
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+      </main>
+
+      <AppFooter />
 
       {confirm === 'delete' && (
         <ConfirmDialog
@@ -472,16 +511,5 @@ export function PatternEditor({ patternId }: Props) {
 
       {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
     </div>
-  );
-}
-
-function YarnSelect({ id, yarns, value, onChange }: { id: string; yarns: Yarn[]; value: string; onChange: (v: string) => void }) {
-  return (
-    <Select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">{yarns.length ? 'No yarn' : 'No yarns in your stash yet'}</option>
-      {yarns.map((y) => (
-        <option key={y.id} value={y.id}>{y.colour_name} — {y.brand}</option>
-      ))}
-    </Select>
   );
 }

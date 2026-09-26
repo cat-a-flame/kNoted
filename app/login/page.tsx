@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className={styles.container}>
         <div className={styles.brand}>
           <h1 className={styles.brandTitle}>kNoted</h1>
-          <p className={styles.brandSub}>Your crochet companion</p>
+          <p className={styles.brandSub}>Your crochet project notebook</p>
         </div>
 
         <div className={styles.card}>

@@ -1,54 +1,55 @@
 .page {
   min-height: 100vh;
+  background-color: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 0 1rem;
 }
 
 .container {
   width: 100%;
-  max-width: 400px;
+  max-width: 24rem;
 }
 
 .brand {
-  margin-bottom: 28px;
+  margin-bottom: 2rem;
   text-align: center;
 }
 
 .brandTitle {
-  font-family: var(--font-display);
-  font-size: 34px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .brandSub {
-  margin-top: 4px;
-  font-size: 14px;
-  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
 }
 
 .card {
   background-color: var(--color-surface);
-  border: var(--hairline);
-  border-radius: var(--radius-card);
-  padding: 26px 28px;
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .cardTitle {
-  font-family: var(--font-display);
-  font-size: 20px;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 18px;
+  color: var(--color-text-primary);
+  margin-bottom: 1.25rem;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 1rem;
 }
 
 .field {
@@ -57,27 +58,25 @@
 }
 
 .errorMsg {
-  font-size: 13px;
+  font-size: 0.875rem;
   color: var(--color-danger);
   background-color: var(--color-danger-light);
-  border-radius: var(--radius-input);
-  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
 }
 
 .submitBtn {
   width: 100%;
-  margin-top: 4px;
   background-color: var(--color-accent);
   color: #fff;
-  border-radius: var(--radius-pill);
-  padding: 13px 20px;
-  font-size: 15px;
-  font-weight: 600;
-  text-align: center;
+  border-radius: var(--radius-sm);
+  padding: 1rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   transition: background-color 0.15s, opacity 0.15s;
 }
 
-.submitBtn:hover:not(:disabled) {
+.submitBtn:hover {
   background-color: var(--color-accent-dark);
 }
 
@@ -86,15 +85,15 @@
 }
 
 .footer {
-  margin-top: 16px;
+  margin-top: 1rem;
   text-align: center;
-  font-size: 14px;
-  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
 }
 
 .footerLink {
   color: var(--color-accent);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .footerLink:hover {

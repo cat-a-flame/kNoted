@@ -11,8 +11,12 @@ import { expandSteps, progressFraction, stepSubtitle, usedStitches } from '@/lib
 import { clamp, patternMeta } from '@/lib/utils';
 import { patternImageUrl } from '@/lib/images';
 import { StitchLayout } from '@/components/workspace/StitchLayout';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppFooter } from '@/components/layout/AppFooter';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { CoverPlaceholder } from '@/components/ui/CoverPlaceholder';
 import { Toast } from '@/components/ui/Toast';
-import { CheckIcon, ChevronLeftIcon, CloseIcon, ExpandIcon, MinusIcon, PencilIcon, PlusIcon } from '@/components/ui/icons';
+import { CheckIcon, ChevronLeftIcon, CloseIcon, ExpandIcon, MinusIcon, PlusIcon } from '@/components/ui/icons';
 import styles from './page.module.css';
 
 const RING_CIRC = 452.4;
@@ -27,7 +31,7 @@ export default function WorkspacePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageOpen, setImageOpen] = useState(false);
-  const activeRowRef = useRef<HTMLButtonElement>(null);
+  const activeRowRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -133,16 +137,27 @@ export default function WorkspacePage() {
   }, [inc, dec, advance, stepComplete, countable, finished, imageOpen]);
 
   useEffect(() => {
-    activeRowRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    activeRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [idx, loading]);
 
-  if (loading) return <div className={styles.centerMsg}>Loading pattern…</div>;
+  if (loading) {
+    return (
+      <div className="appShell">
+        <AppHeader />
+        <p className={styles.loadingText}>Loading pattern…</p>
+      </div>
+    );
+  }
 
   if (!pattern) {
     return (
-      <div className={styles.centerMsg}>
-        <p>This pattern could not be found.</p>
-        <Link href="/patterns" className={styles.backLink}><ChevronLeftIcon size={14} /> Patterns</Link>
+      <div className="appShell">
+        <AppHeader />
+        <main className={styles.notFound}>
+          <p className={styles.notFoundText}>Pattern not found.</p>
+          <Link href="/patterns" className={styles.backLink}>Back to patterns</Link>
+        </main>
+        <AppFooter />
       </div>
     );
   }
@@ -157,175 +172,240 @@ export default function WorkspacePage() {
   const repeatIndex = countable ? Math.min(Math.floor(stitchesMade / step.unit.length) + 1, step.repeat) : 0;
   const ringPct = countable && actionsTotal > 0 ? stitchesMade / actionsTotal : 0;
   const endLabel = step?.end != null ? `Ends this ${unitWord} with ${step.end} stitches.` : '';
-  const bodyText = step ? [step.note, step.text].filter(Boolean).join(' ') : '';
   const nextStepLabel = isLast ? 'Finish pattern' : steps[idx + 1]?.number != null ? `Next ${unitWord}` : 'Next step';
+  const yarnName = (yarnId: string | null) => yarns.find((y) => y.id === yarnId)?.colour_name;
 
   return (
-    <div className={styles.layout}>
-      {/* Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHead}>
-          <div className={styles.sidebarNav}>
-            <Link href="/patterns" className={styles.backLink}><ChevronLeftIcon size={14} /> Patterns</Link>
-            <Link href={`/patterns/${pattern.id}/edit`} className={styles.backLink}><PencilIcon size={13} /> Edit</Link>
-          </div>
-          <div className={styles.patternName}>{pattern.name}</div>
-          {meta && <div className={styles.patternMeta}>{meta}</div>}
-          {imageUrl && (
-            <button onClick={() => setImageOpen(true)} className={styles.imageThumb} aria-label="View pattern image">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageUrl} alt="" />
-              <span className={styles.imageExpand}><ExpandIcon size={13} /></span>
-            </button>
-          )}
-        </div>
+    <div className="appShell">
+      <AppHeader />
 
-        <div className={styles.progressRow}>
-          <div className={styles.track}>
-            <div className={`${styles.fill} ${finished ? styles.fillDone : ''}`} style={{ width: `${Math.round(pct * 100)}%` }} />
-          </div>
-          <span className={styles.progressLabel}>{finished ? 'Finished' : total ? `Step ${idx + 1} of ${total}` : 'No steps'}</span>
-        </div>
-
-        <div className={styles.divider} />
-
-        <nav className={styles.stepList} aria-label="Pattern steps">
-          {steps.map((s, i) => {
-            const isActive = i === idx && !finished;
-            const isDone = i < idx || finished;
-            return (
-              <button
-                key={s.key}
-                ref={i === idx ? activeRowRef : undefined}
-                onClick={() => jumpTo(i)}
-                className={`${styles.stepRow} ${isActive ? styles.stepRowActive : ''}`}
-                aria-current={isActive ? 'step' : undefined}
-              >
-                <span className={`${styles.badge} ${isDone ? styles.badgeDone : isActive ? styles.badgeActive : ''}`}>{s.badge}</span>
-                <span className={styles.stepText}>
-                  <span className={styles.stepTitle}>{s.title}</span>
-                  <span className={styles.stepSub}>{stepSubtitle(s, pattern.worked_in)}</span>
-                </span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {stitchKey.length > 0 && (
-          <div className={styles.stitchKey}>
-            <strong>Stitch key:</strong>{' '}
-            {stitchKey.map((t) => `${STITCHES[t].abbr} = ${STITCHES[t].label.toLowerCase()}`).join(' · ')}
-          </div>
-        )}
-      </aside>
-
-      {/* Main */}
-      <main className={styles.main}>
-        {!step ? (
-          <div className={styles.card}>
-            <p className={styles.bodyText}>This pattern has no steps yet.</p>
-            <Link href={`/patterns/${pattern.id}/edit`} className={styles.inlineLink}>Add rounds and steps</Link>
-          </div>
-        ) : (
-          <>
-            <div>
-              <div className={styles.eyebrowRow}>
-                <span className={styles.yarnDot} style={{ background: step.yarnHex ?? '#DEDCD1' }} />
-                <span className={styles.eyebrow}>{step.eyebrow}</span>
-              </div>
-              <h1 className={styles.stepHeading}>{step.title}</h1>
+      <main className={styles.pageMain}>
+        {/* Sticky title bar */}
+        <div className={styles.pageTop}>
+          <div className={styles.pageTopInner}>
+            <Link href="/patterns" className={styles.backBtn} aria-label="Back to patterns">
+              <ChevronLeftIcon size={18} />
+            </Link>
+            <div className={styles.titleGroup}>
+              <h1 className={styles.titleText}>{pattern.name}</h1>
+              {meta && <span className={styles.titleMeta}>{meta}</span>}
             </div>
+            <Link href={`/patterns/${pattern.id}/edit`} className={styles.editBtn}>Edit</Link>
+          </div>
+        </div>
 
-            <div className={styles.card}>
-              {countable && (
-                <StitchLayout
-                  unit={step.unit}
-                  actionsTotal={actionsTotal}
-                  stitchesMade={stitchesMade}
-                  shape={pattern.worked_in === 'rounds' ? 'ring' : 'rows'}
-                  title={step.title}
-                />
-              )}
+        <div className={styles.container}>
+          <div className={styles.twoCol}>
+            {/* Left: step list, current step expanded */}
+            <div className={styles.stepsCol}>
+              {steps.length === 0 ? (
+                <p className={styles.emptyState}>
+                  No steps yet. <Link href={`/patterns/${pattern.id}/edit`} className={styles.backLink}>Add rounds and steps</Link>
+                </p>
+              ) : (
+                <div className={styles.stepList}>
+                  {steps.map((s, i) => {
+                    const isCurrent = i === idx && !finished;
+                    const isDone = i < idx || finished;
+                    const bubble = isCurrent ? styles.bubbleCurrent : isDone ? styles.bubbleDone : styles.bubbleDefault;
+                    const yarn = yarnName(s.yarnId);
+                    return (
+                      <article
+                        key={s.key}
+                        ref={i === idx ? activeRowRef : undefined}
+                        className={`${styles.stepCard} ${isCurrent ? styles.stepCardCurrent : ''} ${isDone ? styles.stepCardDone : ''}`}
+                      >
+                        <button
+                          onClick={() => !isCurrent && jumpTo(i)}
+                          className={styles.stepHead}
+                          aria-current={isCurrent ? 'step' : undefined}
+                          aria-label={isCurrent ? undefined : `Go to ${s.title}`}
+                        >
+                          <span className={`${styles.rowBubble} ${bubble}`}>
+                            {isDone ? <CheckIcon size={13} strokeWidth={3} /> : s.badge}
+                          </span>
+                          <span className={styles.stepHeadText}>
+                            <span className={styles.stepTitle}>
+                              {s.title}
+                              {s.yarnHex && <span className={styles.yarnDot} style={{ background: s.yarnHex }} title={yarn} />}
+                            </span>
+                            <span className={styles.stepSub}>{stepSubtitle(s, pattern.worked_in)}</span>
+                          </span>
+                        </button>
 
-              {bodyText && <p className={styles.bodyText}>{bodyText}</p>}
+                        {isCurrent && (
+                          <div className={styles.stepBody}>
+                            {(s.note || s.text) && (
+                              <p className={styles.instructions}>{[s.note, s.text].filter(Boolean).join(' ')}</p>
+                            )}
 
-              {countable && (
-                <div className={styles.chipBlock}>
-                  <div className={styles.chips}>
-                    {step.unit.map((t, i) => (
-                      <span key={i} className={styles.chip} style={{ background: STITCHES[t].chipBg, color: STITCHES[t].chipFg }}>
-                        {STITCHES[t].abbr}
-                      </span>
-                    ))}
-                    {step.repeat > 1 && <span className={styles.repeatLabel}>× {step.repeat}</span>}
-                  </div>
-                  {endLabel && <div className={styles.endLabel}>{endLabel}</div>}
+                            {s.countable && (
+                              <>
+                                <div className={styles.pills}>
+                                  {s.unit.map((t, ti) => (
+                                    <span key={ti} className={styles.pill} style={{ background: STITCHES[t].chipBg, color: STITCHES[t].chipFg }}>
+                                      {STITCHES[t].abbr}
+                                    </span>
+                                  ))}
+                                  {s.repeat > 1 && <span className={styles.repeatLabel}>× {s.repeat}</span>}
+                                  {yarn && <span className={styles.yarnLabel}>{yarn}</span>}
+                                </div>
+                                {endLabel && <p className={styles.endLabel}>{endLabel}</p>}
+                                <StitchLayout
+                                  unit={s.unit}
+                                  actionsTotal={actionsTotal}
+                                  stitchesMade={stitchesMade}
+                                  shape={pattern.worked_in === 'rounds' ? 'ring' : 'rows'}
+                                  title={s.title}
+                                />
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
                 </div>
               )}
             </div>
-          </>
-        )}
+
+            {/* Right: image, counter, progress */}
+            <aside className={styles.sidebar}>
+              <button
+                className={styles.coverCard}
+                onClick={() => imageUrl && setImageOpen(true)}
+                disabled={!imageUrl}
+                aria-label={imageUrl ? 'View pattern image' : undefined}
+              >
+                {imageUrl ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={pattern.name} className={styles.coverImg} />
+                    <span className={styles.coverExpand}><ExpandIcon size={13} /></span>
+                  </>
+                ) : (
+                  <CoverPlaceholder iconSize={36} />
+                )}
+              </button>
+
+              {step && (
+                <div className={styles.counterCard}>
+                  <p className={styles.statsLabel}>{UnitWord} counter</p>
+
+                  {finished ? (
+                    <div className={styles.doneBox}>
+                      <div className={styles.doneIcon}><CheckIcon size={22} /></div>
+                      <p className={styles.doneTitle}>Pattern finished!</p>
+                      <p className={styles.doneText}>Every step is done. Lovely work.</p>
+                      <button onClick={() => commit({ finishedAt: null })} className={styles.linkBtn}>Reopen last step</button>
+                    </div>
+                  ) : countable && !stepComplete ? (
+                    <div className={styles.counterBody}>
+                      <p className={styles.counterStep}>
+                        {step.title}
+                        {step.repeat > 1 && <span> · repeat {repeatIndex} of {step.repeat}</span>}
+                      </p>
+                      <div className={styles.dial}>
+                        <svg width="150" height="150" viewBox="0 0 180 180" className={styles.dialSvg}>
+                          <circle cx="90" cy="90" r="72" fill="none" stroke="var(--color-surface-2)" strokeWidth="12" />
+                          <circle
+                            cx="90" cy="90" r="72" fill="none" stroke="var(--color-accent)" strokeWidth="12" strokeLinecap="round"
+                            strokeDasharray={RING_CIRC} strokeDashoffset={RING_CIRC * (1 - ringPct)}
+                            className={styles.dialArc}
+                          />
+                        </svg>
+                        <div className={styles.dialCenter}>
+                          <span className={styles.dialCount}>{stitchesMade}</span>
+                          <span className={styles.dialOf}>of {actionsTotal} sts</span>
+                        </div>
+                      </div>
+                      <p className={styles.nextLabel}>{nextToken ? `Next: ${STITCHES[nextToken].label}` : ''}</p>
+                      <div className={styles.counterButtons}>
+                        <button onClick={dec} disabled={stitchesMade <= 0} aria-label="Remove one stitch" className={styles.decBtn}>
+                          <MinusIcon size={18} />
+                        </button>
+                        <button onClick={inc} aria-label="Add one stitch" className={styles.incBtn}>
+                          <PlusIcon size={22} />
+                        </button>
+                      </div>
+                      <p className={styles.keyHint}>Space adds a stitch · Backspace removes one</p>
+                    </div>
+                  ) : countable ? (
+                    <div className={styles.doneBox}>
+                      <div className={styles.doneIcon}><CheckIcon size={22} /></div>
+                      <p className={styles.doneTitle}>{UnitWord} complete!</p>
+                      {endLabel && <p className={styles.doneText}>{endLabel}</p>}
+                      <button onClick={advance} className={styles.nextBtn}>{nextStepLabel}</button>
+                      <button onClick={dec} className={styles.linkBtn}>Back up one stitch</button>
+                    </div>
+                  ) : (
+                    <div className={styles.doneBox}>
+                      <p className={styles.doneText}>No stitches to count on this step &mdash; just follow the instructions.</p>
+                      <button onClick={advance} className={styles.nextBtn}>{nextStepLabel}</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className={styles.statsCard}>
+                <p className={styles.statsLabel}>Progress</p>
+                <p className={styles.statsValue}>
+                  {finished ? 'Finished' : total ? <>Step {idx + 1} <span className={styles.statsOf}>of {total}</span></> : '—'}
+                </p>
+                <ProgressBar value={Math.round(pct * 100)} max={100} className={styles.statsBar} />
+                {stitchKey.length > 0 && (
+                  <>
+                    <div className={styles.statsDivider} />
+                    <p className={styles.statsSub}>Stitch key</p>
+                    <ul className={styles.stitchKey}>
+                      {stitchKey.map((t) => (
+                        <li key={t}>
+                          <span className={styles.keyDot} style={{ background: STITCHES[t].strong }} />
+                          <strong>{STITCHES[t].abbr}</strong> {STITCHES[t].label.toLowerCase()}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            </aside>
+          </div>
+        </div>
       </main>
 
-      {/* Counter */}
-      <aside className={styles.counter}>
-        <div className={styles.counterTitle}>{UnitWord} counter</div>
-
-        {finished ? (
-          <div className={styles.doneBox}>
-            <div className={styles.doneIcon}><CheckIcon size={24} /></div>
-            <div className={styles.doneTitle}>Pattern finished!</div>
-            <p className={styles.doneText}>Every step is done. Lovely work.</p>
-            <button onClick={() => commit({ finishedAt: null })} className={styles.linkBtn}>Reopen last step</button>
-          </div>
-        ) : !step ? null : countable && !stepComplete ? (
-          <div className={styles.counterBody}>
-            {step.repeat > 1 && <div className={styles.repeatInfo}>Repeat {repeatIndex} of {step.repeat}</div>}
-
-            <div className={styles.dial}>
-              <svg width="180" height="180" viewBox="0 0 180 180" className={styles.dialSvg}>
-                <circle cx="90" cy="90" r="72" fill="none" stroke="#EFEBE3" strokeWidth="12" />
-                <circle
-                  cx="90" cy="90" r="72" fill="none" stroke="#7A5AA6" strokeWidth="12" strokeLinecap="round"
-                  strokeDasharray={RING_CIRC} strokeDashoffset={RING_CIRC * (1 - ringPct)}
-                  className={styles.dialArc}
-                />
-              </svg>
-              <div className={styles.dialCenter}>
-                <div className={styles.dialCount}>{stitchesMade}</div>
-                <div className={styles.dialOf}>of {actionsTotal} stitches</div>
-              </div>
-            </div>
-
-            <div className={styles.nextLabel}>{nextToken ? `Next: ${STITCHES[nextToken].label}` : ''}</div>
-
-            <div className={styles.counterButtons}>
+      {/* Phones: the counter stays under your thumb while you read the step list. */}
+      {step && !finished && (
+        <div className={styles.mobileBar}>
+          {countable && !stepComplete ? (
+            <>
               <button onClick={dec} disabled={stitchesMade <= 0} aria-label="Remove one stitch" className={styles.decBtn}>
                 <MinusIcon size={18} />
               </button>
+              <div className={styles.mobileBarText}>
+                <span className={styles.mobileBarCount}>{stitchesMade}<span> / {actionsTotal}</span></span>
+                <span className={styles.mobileBarSub}>
+                  {step.title}{nextToken ? ` · next ${STITCHES[nextToken].abbr}` : ''}
+                </span>
+              </div>
               <button onClick={inc} aria-label="Add one stitch" className={styles.incBtn}>
                 <PlusIcon size={22} />
               </button>
-            </div>
+            </>
+          ) : (
+            <>
+              <div className={styles.mobileBarText}>
+                <span className={styles.mobileBarSub}>{countable ? `${step.title} complete` : step.title}</span>
+              </div>
+              {countable && (
+                <button onClick={dec} className={styles.linkBtn}>Undo</button>
+              )}
+              <button onClick={advance} className={styles.mobileNextBtn}>{nextStepLabel}</button>
+            </>
+          )}
+        </div>
+      )}
 
-            <p className={styles.keyHint}>Space adds a stitch · Backspace removes one</p>
-          </div>
-        ) : countable ? (
-          <div className={styles.doneBox}>
-            <div className={styles.doneIcon}><CheckIcon size={24} /></div>
-            <div className={styles.doneTitle}>{UnitWord} complete!</div>
-            {endLabel && <p className={styles.doneText}>{endLabel}</p>}
-            <button onClick={advance} className={styles.nextBtn}>{nextStepLabel}</button>
-            <button onClick={dec} className={styles.linkBtn}>Back up one stitch</button>
-          </div>
-        ) : (
-          <div className={styles.idleBox}>
-            <div className={styles.idleIcon}><CheckIcon size={24} strokeWidth={2.2} /></div>
-            <p className={styles.doneText}>No stitches to count on this step &mdash; just the finishing touches.</p>
-            <button onClick={advance} className={styles.nextBtn}>{nextStepLabel}</button>
-          </div>
-        )}
-      </aside>
+      <AppFooter />
 
       {imageOpen && imageUrl && (
         <div className={styles.lightbox} role="dialog" aria-modal="true" aria-label={`${pattern.name} image`} onClick={() => setImageOpen(false)}>

@@ -44,7 +44,7 @@ export function PatternImageField({ src, onPick, onRemove, onError }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={src} alt="Pattern" className={styles.previewImg} />
           <div className={styles.previewActions}>
-            <button type="button" onClick={browse} className={buttons.ghost}>Replace</button>
+            <button type="button" onClick={browse} className={buttons.secondary}>Replace</button>
             <button type="button" onClick={onRemove} className={buttons.danger}>Remove</button>
           </div>
         </div>

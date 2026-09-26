@@ -2,7 +2,8 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { AppTabs } from '@/components/layout/AppTabs';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppFooter } from '@/components/layout/AppFooter';
 import { Input } from '@/components/ui/Input';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { Toast } from '@/components/ui/Toast';
@@ -64,8 +65,8 @@ export default function AccountPage() {
   };
 
   return (
-    <div className={styles.page}>
-      <AppTabs />
+    <div className="appShell">
+      <AppHeader />
 
       <main className={styles.main}>
         <div className={styles.container}>
@@ -138,6 +139,8 @@ export default function AccountPage() {
           </section>
         </div>
       </main>
+
+      <AppFooter />
 
       {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
     </div>

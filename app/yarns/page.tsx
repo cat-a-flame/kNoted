@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Yarn } from '@/lib/types';
-import { AppTabs } from '@/components/layout/AppTabs';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppFooter } from '@/components/layout/AppFooter';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { Input, Textarea } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Toast } from '@/components/ui/Toast';
-import { CloseIcon, PencilIcon, PlusIcon } from '@/components/ui/icons';
+import { CloseIcon, PencilIcon } from '@/components/ui/icons';
 import buttons from '@/components/ui/buttons.module.css';
 import styles from './page.module.css';
 
@@ -143,131 +144,123 @@ export default function YarnsPage() {
   const countLabel = `${yarns.length} ${yarns.length === 1 ? 'yarn' : 'yarns'} in your stash`;
 
   return (
-    <div className={styles.page}>
-      <AppTabs />
+    <div className="appShell">
+      <AppHeader />
 
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>My yarn stash</h1>
-          <p className={styles.subtitle}>{loading ? 'Loading…' : countLabel}</p>
-        </div>
-        <button onClick={openAdd} className={buttons.primary}>
-          {formOpen ? <CloseIcon size={16} /> : <PlusIcon size={16} />}
-          {formOpen ? 'Close' : 'Add yarn'}
-        </button>
-      </header>
-
-      <main className={styles.body}>
-        {formOpen && (
-          <form onSubmit={handleSave} className={styles.formCard}>
-            <h2 className={styles.formTitle}>{editingId ? 'Edit yarn' : 'Add a yarn'}</h2>
-
-            <div className={styles.grid2}>
-              <div>
-                <FormLabel htmlFor="y-brand">Brand / name</FormLabel>
-                <Input id="y-brand" placeholder="e.g. Craft Cotton" value={draft.brand} onChange={update('brand')} autoFocus />
-              </div>
-              <div>
-                <FormLabel htmlFor="y-colourname">Colour name</FormLabel>
-                <Input id="y-colourname" placeholder="e.g. Pumpkin Orange" value={draft.colour_name} onChange={update('colour_name')} />
-              </div>
-            </div>
-
+      <main className={styles.main}>
+        <div className={styles.container}>
+          <div className={styles.topRow}>
             <div>
-              <FormLabel htmlFor="y-colorpicker">Colour</FormLabel>
-              <div className={styles.colourRow}>
-                <input id="y-colorpicker" type="color" value={draft.colour_hex} onChange={update('colour_hex')} className={styles.colourPicker} />
-                <span className={styles.colourHex}>{draft.colour_hex.toUpperCase()}</span>
-              </div>
+              <h1 className={styles.title}>Yarn stash</h1>
+              <p className={styles.subtitle}>{loading ? 'Loading…' : countLabel}</p>
             </div>
-
-            <div>
-              <FormLabel htmlFor="y-fiber">Fibre type</FormLabel>
-              <Input id="y-fiber" placeholder="e.g. 100% cotton" value={draft.fiber} onChange={update('fiber')} />
-            </div>
-
-            <div className={styles.grid2}>
-              <div>
-                <FormLabel htmlFor="y-hook">Hook / needle size</FormLabel>
-                <Input id="y-hook" placeholder="e.g. 4.5mm / G-7" value={draft.hook} onChange={update('hook')} />
-              </div>
-              <div>
-                <FormLabel htmlFor="y-skein">Skein weight &amp; length</FormLabel>
-                <Input id="y-skein" placeholder="e.g. 100g / 150m" value={draft.skein} onChange={update('skein')} />
-              </div>
-            </div>
-
-            <div>
-              <FormLabel htmlFor="y-qty">Quantity on hand</FormLabel>
-              <Input id="y-qty" placeholder="e.g. 2 skeins" value={draft.quantity} onChange={update('quantity')} />
-            </div>
-
-            <div>
-              <FormLabel htmlFor="y-care">Care info</FormLabel>
-              <Textarea id="y-care" rows={2} placeholder="e.g. Machine wash cold, lay flat to dry" value={draft.care} onChange={update('care')} />
-            </div>
-
-            <div>
-              <FormLabel htmlFor="y-notes">Notes (optional)</FormLabel>
-              <Textarea id="y-notes" rows={2} placeholder="e.g. Leftover from the pumpkin project" value={draft.notes} onChange={update('notes')} />
-            </div>
-
-            <div className={styles.formActions}>
-              <button type="button" onClick={closeForm} className={buttons.ghost}>Cancel</button>
-              <button type="submit" disabled={!canSave || saving} className={buttons.primary}>
-                {editingId ? (saving ? 'Saving…' : 'Save changes') : saving ? 'Adding…' : 'Add to stash'}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {!loading && yarns.length === 0 && !formOpen && (
-          <div className={styles.empty}>
-            <p className={styles.emptyTitle}>Your stash is empty</p>
-            <p className={styles.emptyText}>Add the yarns you have on hand, then link them to the steps of your patterns.</p>
+            <button onClick={openAdd} className={styles.addBtn}>{formOpen ? 'Close' : '+ Add yarn'}</button>
           </div>
-        )}
 
-        <div className={styles.cards}>
-          {yarns.map((y) => (
-            <article key={y.id} className={`${styles.card} ${editingId === y.id ? styles.cardEditing : ''}`}>
-              <div className={styles.cardActions}>
-                <button onClick={() => openEdit(y)} aria-label={`Edit ${y.colour_name}`} className={buttons.iconRound}>
-                  <PencilIcon size={14} />
-                </button>
-                <button onClick={() => setDeleteTarget(y)} aria-label={`Remove ${y.colour_name}`} className={buttons.iconRound}>
-                  <CloseIcon size={14} />
-                </button>
-              </div>
+          {formOpen && (
+            <form onSubmit={handleSave} className={styles.formCard}>
+              <h2 className={styles.formTitle}>{editingId ? 'Edit yarn' : 'Add a yarn'}</h2>
 
-              <div className={styles.cardHead}>
-                <span className={styles.swatch} style={{ background: y.colour_hex }} />
-                <div className={styles.cardHeadText}>
-                  <div className={styles.colourName}>{y.colour_name}</div>
-                  <div className={styles.brand}>{y.brand}</div>
+              <div className={styles.grid2}>
+                <div>
+                  <FormLabel htmlFor="y-brand">Brand / name</FormLabel>
+                  <Input id="y-brand" placeholder="e.g. Craft Cotton" value={draft.brand} onChange={update('brand')} autoFocus />
+                </div>
+                <div>
+                  <FormLabel htmlFor="y-colourname">Colour name</FormLabel>
+                  <Input id="y-colourname" placeholder="e.g. Pumpkin Orange" value={draft.colour_name} onChange={update('colour_name')} />
                 </div>
               </div>
 
-              {y.fiber && (
-                <div className={styles.tags}>
-                  <span className={styles.tag}>{y.fiber}</span>
+              <div className={styles.grid2}>
+                <div>
+                  <FormLabel htmlFor="y-colorpicker">Colour</FormLabel>
+                  <div className={styles.colourRow}>
+                    <input id="y-colorpicker" type="color" value={draft.colour_hex} onChange={update('colour_hex')} className={styles.colourPicker} />
+                    <span className={styles.colourHex}>{draft.colour_hex.toUpperCase()}</span>
+                  </div>
                 </div>
-              )}
-
-              {(y.hook || y.skein || y.quantity) && (
-                <div className={styles.specs}>
-                  {y.hook && <div><strong>Hook:</strong> {y.hook}</div>}
-                  {y.skein && <div><strong>Skein:</strong> {y.skein}</div>}
-                  {y.quantity && <div><strong>On hand:</strong> {y.quantity}</div>}
+                <div>
+                  <FormLabel htmlFor="y-fiber">Fibre type</FormLabel>
+                  <Input id="y-fiber" placeholder="e.g. 100% cotton" value={draft.fiber} onChange={update('fiber')} />
                 </div>
-              )}
+              </div>
 
-              {y.care && <div className={styles.care}>{y.care}</div>}
-              {y.notes && <div className={styles.notes}>{y.notes}</div>}
-            </article>
-          ))}
+              <div className={styles.grid3}>
+                <div>
+                  <FormLabel htmlFor="y-hook">Hook / needle size</FormLabel>
+                  <Input id="y-hook" placeholder="e.g. 4.5mm / G-7" value={draft.hook} onChange={update('hook')} />
+                </div>
+                <div>
+                  <FormLabel htmlFor="y-skein">Skein weight &amp; length</FormLabel>
+                  <Input id="y-skein" placeholder="e.g. 100g / 150m" value={draft.skein} onChange={update('skein')} />
+                </div>
+                <div>
+                  <FormLabel htmlFor="y-qty">Quantity on hand</FormLabel>
+                  <Input id="y-qty" placeholder="e.g. 2 skeins" value={draft.quantity} onChange={update('quantity')} />
+                </div>
+              </div>
+
+              <div className={styles.grid2}>
+                <div>
+                  <FormLabel htmlFor="y-care">Care info</FormLabel>
+                  <Textarea id="y-care" rows={2} placeholder="e.g. Machine wash cold, lay flat to dry" value={draft.care} onChange={update('care')} />
+                </div>
+                <div>
+                  <FormLabel htmlFor="y-notes">Notes (optional)</FormLabel>
+                  <Textarea id="y-notes" rows={2} placeholder="e.g. Leftover from the pumpkin project" value={draft.notes} onChange={update('notes')} />
+                </div>
+              </div>
+
+              <div className={styles.formActions}>
+                <button type="button" onClick={closeForm} className={buttons.secondary}>Cancel</button>
+                <button type="submit" disabled={!canSave || saving} className={buttons.primary}>
+                  {editingId ? (saving ? 'Saving…' : 'Save changes') : saving ? 'Adding…' : 'Add to stash'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {!loading && yarns.length === 0 && !formOpen && (
+            <p className={styles.empty}>Your stash is empty. Add the yarns you have on hand, then link them to the steps of your patterns.</p>
+          )}
+
+          <div className={styles.cards}>
+            {yarns.map((y) => (
+              <article key={y.id} className={`${styles.card} ${editingId === y.id ? styles.cardEditing : ''}`}>
+                <div className={styles.swatch} style={{ background: y.colour_hex }}>
+                  <div className={styles.cardActions}>
+                    <button onClick={() => openEdit(y)} aria-label={`Edit ${y.colour_name}`} className={styles.swatchBtn}>
+                      <PencilIcon size={14} />
+                    </button>
+                    <button onClick={() => setDeleteTarget(y)} aria-label={`Remove ${y.colour_name}`} className={styles.swatchBtn}>
+                      <CloseIcon size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.body}>
+                  <h3 className={styles.colourName}>{y.colour_name}</h3>
+                  <p className={styles.brand}>{y.brand}{y.fiber ? ` · ${y.fiber}` : ''}</p>
+
+                  {(y.hook || y.skein || y.quantity) && (
+                    <dl className={styles.specs}>
+                      {y.hook && <><dt>Hook</dt><dd>{y.hook}</dd></>}
+                      {y.skein && <><dt>Skein</dt><dd>{y.skein}</dd></>}
+                      {y.quantity && <><dt>On hand</dt><dd>{y.quantity}</dd></>}
+                    </dl>
+                  )}
+
+                  {y.care && <p className={styles.care}>{y.care}</p>}
+                  {y.notes && <p className={styles.notes}>{y.notes}</p>}
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </main>
+
+      <AppFooter />
 
       {deleteTarget && (
         <ConfirmDialog

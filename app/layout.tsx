@@ -1,30 +1,28 @@
 import type { Metadata } from 'next';
-import { Fredoka, Karla } from 'next/font/google';
+import { Lora, Figtree } from 'next/font/google';
 import './globals.css';
 
-const fredoka = Fredoka({
+const lora = Lora({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--font-fredoka',
+  variable: '--font-lora',
   display: 'swap',
 });
 
-const karla = Karla({
+const figtree = Figtree({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-karla',
+  variable: '--font-figtree',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'kNoted',
-  description: 'Your crochet companion — patterns, stitch counter and yarn stash',
+  description: 'Your crochet project notebook',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fredoka.variable} ${karla.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${lora.variable} ${figtree.variable}`}>
+      <body className="font-sans bg-bg text-text-primary antialiased">{children}</body>
     </html>
   );
 }

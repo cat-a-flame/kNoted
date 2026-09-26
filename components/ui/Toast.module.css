@@ -1,30 +1,29 @@
 .wrapper {
   position: fixed;
-  bottom: 24px;
-  left: 50%;
+  top: 1.5rem;
+  right: 1.5rem;
   z-index: 50;
-  transform: translateX(-50%);
-  animation: rise 0.25s ease forwards;
+  animation: slideInRight 0.25s ease forwards;
 }
 
 .wrapperExiting {
-  animation: sink 0.25s ease forwards;
+  animation: slideOutRight 0.25s ease forwards;
 }
 
 .toast {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 14px 11px 18px;
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-pop);
-  font-size: 14px;
-  font-weight: 600;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .success {
-  background-color: var(--color-text);
+  background-color: var(--color-accent-dark);
   color: #fff;
 }
 
@@ -34,19 +33,26 @@
 }
 
 .undoBtn {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-accent-light);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.85;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.5rem;
+  transition: opacity 0.15s;
+}
+
+.undoBtn:hover {
+  opacity: 1;
 }
 
 .dismiss {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-pill);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   opacity: 0.7;
+  font-size: 1.125rem;
+  line-height: 1;
+  margin-left: auto;
+  transition: var(--transition-opacity);
   color: inherit;
 }
 
@@ -54,12 +60,24 @@
   opacity: 1;
 }
 
-@keyframes rise {
-  from { opacity: 0; transform: translate(-50%, 12px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100% + 1.5rem));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-@keyframes sink {
-  from { opacity: 1; transform: translate(-50%, 0); }
-  to { opacity: 0; transform: translate(-50%, 12px); }
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(calc(100% + 1.5rem));
+  }
 }

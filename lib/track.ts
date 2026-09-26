@@ -9,6 +9,7 @@ export type TrackStep = {
   title: string;
   eyebrow: string;
   badge: string;
+  yarnId: string | null;
   yarnHex: string | null;
   note: string | null;
   text: string;
@@ -64,6 +65,7 @@ export function expandSteps(
           title,
           eyebrow: title.toUpperCase(),
           badge: number !== null ? String(number) : badgeFor(name ?? ''),
+          yarnId: step.yarn_id,
           yarnHex: step.yarn_id ? yarnHex.get(step.yarn_id) ?? null : null,
           // A note on a repeated step belongs to the first of the run.
           note: k === 0 ? step.note : null,

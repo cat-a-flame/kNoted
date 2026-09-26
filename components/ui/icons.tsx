@@ -39,3 +39,5 @@ export const ImageIcon = (p: IconProps) => (
 );
 
 export const ExpandIcon = (p: IconProps) => <Svg strokeWidth={2.2} {...p}><path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6" /></Svg>;
+export const ArrowUpIcon = (p: IconProps) => <Svg strokeWidth={2.2} {...p}><path d="M12 19V5M6 11l6-6 6 6" /></Svg>;
+export const ArrowDownIcon = (p: IconProps) => <Svg strokeWidth={2.2} {...p}><path d="M12 5v14M6 13l6 6 6-6" /></Svg>;
