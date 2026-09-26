@@ -69,7 +69,7 @@ create table public.pattern_steps (
   note         text,
   yarn_id      uuid references public.yarns (id) on delete set null,
   stitch_unit  text[] not null default '{}'
-               check (stitch_unit <@ array['sc','hdc','dc','tr','ch','slst','inc','dec']::text[]),
+               check (stitch_unit <@ array['sc','hdc','dc','tr','dtr','ch','slst','inc','dec']::text[]),
   repeat_count integer not null default 1 check (repeat_count >= 1),
   end_count    integer check (end_count is null or end_count >= 0),
   times        integer not null default 1 check (times >= 1),
@@ -128,6 +128,7 @@ $$;
 
 -- 7. Storage --------------------------------------------------
 -- Pattern images use the "pattern-images" bucket, created by
--- 002_pattern_images.sql — run that file next.
+-- 002_pattern_images.sql — run that file next, then
+-- 003_double_treble.sql.
 -- The v1 "pattern-covers" bucket is no longer used; you can empty and
 -- delete it from the dashboard (Storage → pattern-covers → Delete bucket).

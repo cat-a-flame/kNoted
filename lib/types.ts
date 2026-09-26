@@ -1,4 +1,4 @@
-export type StitchType = 'sc' | 'hdc' | 'dc' | 'tr' | 'ch' | 'slst' | 'inc' | 'dec';
+export type StitchType = 'sc' | 'hdc' | 'dc' | 'tr' | 'dtr' | 'ch' | 'slst' | 'inc' | 'dec';
 
 export type WorkedIn = 'rounds' | 'rows';
 
