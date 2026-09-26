@@ -1,0 +1,86 @@
+/* Shared buttons, matching the original kNoted controls. */
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--color-accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--color-accent-dark);
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface);
+  white-space: nowrap;
+  transition: var(--transition-colors);
+}
+
+.secondary:hover {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+
+.danger {
+  composes: secondary;
+  color: var(--color-danger);
+}
+
+.danger:hover {
+  background-color: var(--color-danger-light);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  color: var(--color-text-tertiary);
+  transition: var(--transition-colors);
+}
+
+.icon:hover:not(:disabled) {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+}
+
+.icon:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.iconDanger {
+  composes: icon;
+}
+
+.iconDanger:hover:not(:disabled) {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}

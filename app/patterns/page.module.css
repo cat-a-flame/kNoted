@@ -1,0 +1,167 @@
+.main {
+  flex: 1;
+}
+
+.container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.tabRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition-colors);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  text-transform: capitalize;
+  color: var(--color-text-secondary);
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tabActive {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.newBtn {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background-color: var(--color-accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  margin-bottom: 0.5rem;
+  transition: background-color 0.15s;
+}
+
+.newBtn:hover {
+  background-color: var(--color-accent-dark);
+}
+
+.empty {
+  padding: 4rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.emptyLink {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.emptyLink:hover {
+  text-decoration: underline;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  display: block;
+  background-color: var(--color-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.cover {
+  position: relative;
+  width: 100%;
+  height: 15rem;
+}
+
+.coverImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.doneBadge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background-color: var(--color-sage-light);
+  color: var(--color-sage-dark);
+  border: 1px solid var(--color-sage);
+  border-radius: var(--radius-sm);
+}
+
+.body {
+  padding: 1rem;
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.375;
+}
+
+.meta {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.125rem;
+}
+
+.status {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin-top: 0.125rem;
+}
+
+.progress {
+  margin-top: 0.75rem;
+}

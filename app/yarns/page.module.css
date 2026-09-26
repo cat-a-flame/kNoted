@@ -1,0 +1,233 @@
+.main {
+  flex: 1;
+}
+
+.container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.topRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.125rem;
+}
+
+.addBtn {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background-color: var(--color-accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.addBtn:hover {
+  background-color: var(--color-accent-dark);
+}
+
+.formCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.formTitle {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.grid2,
+.grid3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .grid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.colourRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.colourPicker {
+  width: 3.25rem;
+  height: 2.9rem;
+  padding: 0.125rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.colourHex {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.empty {
+  padding: 4rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.cardEditing {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.swatch {
+  position: relative;
+  height: 5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.cardActions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.swatchBtn {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  color: var(--color-text-secondary);
+  transition: var(--transition-colors);
+}
+
+.swatchBtn:hover {
+  background-color: #fff;
+  color: var(--color-text-primary);
+}
+
+.body {
+  padding: 1rem;
+}
+
+.colourName {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.375;
+}
+
+.brand {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.125rem;
+}
+
+.specs {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.125rem 0.75rem;
+  font-size: 0.8125rem;
+  margin-top: 0.75rem;
+}
+
+.specs dt {
+  color: var(--color-text-tertiary);
+}
+
+.specs dd {
+  color: var(--color-text-primary);
+}
+
+.care {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 0.625rem;
+  margin-top: 0.75rem;
+}
+
+.notes {
+  font-size: 0.75rem;
+  color: var(--color-accent-dark);
+  font-style: italic;
+  margin-top: 0.375rem;
+}

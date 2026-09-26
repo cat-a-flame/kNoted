@@ -11,8 +11,8 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--color-coral);
-  box-shadow: 0 0 0 1px var(--color-coral);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
 .input::placeholder {
@@ -28,4 +28,13 @@
   background-color: var(--color-surface-2);
   color: var(--color-text-tertiary);
   cursor: not-allowed;
+}
+
+.textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+select.input {
+  padding-right: 2rem;
 }

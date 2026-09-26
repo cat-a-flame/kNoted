@@ -7,8 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import styles from './AppHeader.module.css';
 
 const navItems = [
-  { href: '/projects', label: 'Projects' },
-  { href: '/stats', label: 'Statistics' },
+  { href: '/patterns', label: 'Patterns' },
+  { href: '/yarns', label: 'Yarns' },
 ];
 
 function UserMenu() {
@@ -67,7 +67,7 @@ export function AppHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.headerInner}>
-        <Link href="/projects" className={styles.brand}>kNoted</Link>
+        <Link href="/patterns" className={styles.brand}>kNoted</Link>
         <div className={styles.headerRight}>
           <nav className={styles.headerNav}>
             {navItems.map(({ href, label }) => {

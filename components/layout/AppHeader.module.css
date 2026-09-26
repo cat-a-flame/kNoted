@@ -48,8 +48,8 @@
 }
 
 .headerNavLinkActive {
-  color: var(--color-coral);
-  background-color: var(--color-coral-light);
+  color: var(--color-accent);
+  background-color: var(--color-accent-light);
 }
 
 .headerRight {
@@ -81,7 +81,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: 9999px;
-  background-color: var(--color-coral);
+  background-color: var(--color-accent);
   color: #fff;
   font-size: 0.8125rem;
   font-weight: 600;
