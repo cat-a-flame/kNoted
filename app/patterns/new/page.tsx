@@ -1,5 +1,6 @@
-import { PatternEditor } from '@/components/patterns/PatternEditor';
+import { redirect } from 'next/navigation';
 
+/** The form lives in a dialog on /patterns now. */
 export default function NewPatternPage() {
-  return <PatternEditor />;
+  redirect('/patterns?new');
 }

@@ -14,6 +14,7 @@ export type Yarn = {
   quantity: string | null;
   care: string | null;
   notes: string | null;
+  image_path: string | null;
   created_at: string;
 };
 

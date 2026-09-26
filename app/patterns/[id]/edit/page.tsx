@@ -1,6 +1,7 @@
-import { PatternEditor } from '@/components/patterns/PatternEditor';
+import { redirect } from 'next/navigation';
 
+/** The form lives in a dialog on the pattern page now. */
 export default async function EditPatternPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <PatternEditor patternId={id} />;
+  redirect(`/patterns/${id}?edit`);
 }

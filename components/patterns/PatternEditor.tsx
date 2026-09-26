@@ -1,21 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Pattern, StitchType, WorkedIn, Yarn } from '@/lib/types';
 import { STITCHES, STITCH_ORDER, instructionText, suggestedEndCount } from '@/lib/stitches';
 import { patternImageUrl, removePatternImage, uploadPatternImage } from '@/lib/images';
-import { AppHeader } from '@/components/layout/AppHeader';
-import { AppFooter } from '@/components/layout/AppFooter';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Dialog } from '@/components/ui/Dialog';
+import { ImageField } from '@/components/ui/ImageField';
 import { Toast } from '@/components/ui/Toast';
 import { ArrowDownIcon, ArrowUpIcon, BackspaceIcon, ChevronUpIcon, CloseIcon, CopyIcon, PencilIcon } from '@/components/ui/icons';
 import buttons from '@/components/ui/buttons.module.css';
-import { PatternImageField } from './PatternImageField';
 import styles from './PatternEditor.module.css';
 
 type DraftStep = {
@@ -63,10 +60,17 @@ const toInt = (v: string, fallback: number) => {
 /** Rounds with stitches and titled steps (e.g. "Shape segment" ×6) can repeat; an untitled note step can't. */
 const canRepeat = (s: DraftStep) => s.unit.length > 0 || !!s.title.trim();
 
-type Props = { patternId?: string };
+type Props = {
+  /** Omit to create a new pattern. */
+  patternId?: string;
+  onClose: () => void;
+  onSaved: (id: string) => void;
+  onDeleted?: () => void;
+  onReset?: () => void;
+};
 
-export function PatternEditor({ patternId }: Props) {
-  const router = useRouter();
+/** Create / edit form for a pattern, shown in a dialog. */
+export function PatternEditor({ patternId, onClose, onSaved, onDeleted, onReset }: Props) {
   const isEdit = !!patternId;
 
   const [name, setName] = useState('');
@@ -89,6 +93,12 @@ export function PatternEditor({ patternId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<'delete' | 'reset' | null>(null);
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
+
+  // The error sits at the end of the scrolling body; bring it into view.
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [error]);
 
   useEffect(() => {
     if (!patternId) setOpenKeys(new Set(steps.slice(0, 1).map((s) => s.key)));
@@ -191,6 +201,7 @@ export function PatternEditor({ patternId }: Props) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving || loading) return;
     if (!name.trim()) { setError('Give the pattern a name.'); return; }
     setError(null);
     setSaving(true);
@@ -254,7 +265,8 @@ export function PatternEditor({ patternId }: Props) {
       }
     }
 
-    router.push(`/patterns/${id}`);
+    setSaving(false);
+    onSaved(id!);
   };
 
   const handleDelete = async () => {
@@ -262,7 +274,7 @@ export function PatternEditor({ patternId }: Props) {
     const { error } = await createClient().from('patterns').delete().eq('id', patternId!);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
     await removePatternImage(imagePath);
-    router.push('/patterns');
+    onDeleted?.();
   };
 
   const handleReset = async () => {
@@ -271,22 +283,38 @@ export function PatternEditor({ patternId }: Props) {
       .from('patterns')
       .update({ current_step: 0, current_stitch: 0, started_at: null, finished_at: null })
       .eq('id', patternId!);
-    setToast(error ? { message: error.message, variant: 'error' } : { message: 'Progress reset.', variant: 'success' });
+    if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    setToast({ message: 'Progress reset.', variant: 'success' });
+    onReset?.();
   };
 
-  const cancelHref = isEdit ? `/patterns/${patternId}` : '/patterns';
-
   return (
-    <div className="appShell">
-      <AppHeader />
-
-      <main className={styles.main}>
-        <h1 className={styles.pageTitle}>{isEdit ? 'Edit pattern' : 'New pattern'}</h1>
-
+    <>
+      <Dialog
+        title={isEdit ? 'Edit pattern' : 'New pattern'}
+        onClose={onClose}
+        onSubmit={handleSave}
+        size="lg"
+        closeOnEscape={!confirm}
+        footer={
+          <>
+            {isEdit && !loading && (
+              <div className={styles.footerLeft}>
+                <button type="button" onClick={() => setConfirm('reset')} className={buttons.secondary}>Reset progress</button>
+                <button type="button" onClick={() => setConfirm('delete')} className={buttons.danger}>Delete</button>
+              </div>
+            )}
+            <button type="button" onClick={onClose} className={buttons.secondary}>Cancel</button>
+            <button type="submit" disabled={saving || loading} className={buttons.primary}>
+              {saving ? 'Saving…' : isEdit ? 'Save pattern' : 'Create pattern'}
+            </button>
+          </>
+        }
+      >
         {loading ? (
           <p className={styles.muted}>Loading pattern…</p>
         ) : (
-          <form onSubmit={handleSave} className={styles.form}>
+          <div className={styles.form}>
             {/* ── Pattern details ── */}
             <section className={styles.card}>
               <div className={styles.field}>
@@ -312,11 +340,13 @@ export function PatternEditor({ patternId }: Props) {
               </div>
               <div className={styles.field}>
                 <FormLabel>Image (optional)</FormLabel>
-                <PatternImageField
+                <ImageField
                   src={imageSrc}
                   onPick={(file) => setImageChange(file)}
                   onRemove={() => setImageChange(imagePath ? null : undefined)}
                   onError={(message) => setToast({ message, variant: 'error' })}
+                  hint="A photo of the finished piece or the pattern chart"
+                  alt={name || 'Pattern'}
                 />
               </div>
             </section>
@@ -487,27 +517,10 @@ export function PatternEditor({ patternId }: Props) {
               </div>
             </div>
 
-            {error && <p className={styles.errorMsg}>{error}</p>}
-
-            <div className={styles.footer}>
-              {isEdit && (
-                <div className={styles.footerLeft}>
-                  <button type="button" onClick={() => setConfirm('reset')} className={buttons.secondary}>Reset progress</button>
-                  <button type="button" onClick={() => setConfirm('delete')} className={buttons.danger}>Delete</button>
-                </div>
-              )}
-              <div className={styles.footerRight}>
-                <Link href={cancelHref} className={buttons.secondary}>Cancel</Link>
-                <button type="submit" disabled={saving} className={buttons.primary}>
-                  {saving ? 'Saving…' : isEdit ? 'Save pattern' : 'Create pattern'}
-                </button>
-              </div>
-            </div>
-          </form>
+            {error && <p ref={errorRef} className={styles.errorMsg}>{error}</p>}
+          </div>
         )}
-      </main>
-
-      <AppFooter />
+      </Dialog>
 
       {confirm === 'delete' && (
         <ConfirmDialog
@@ -528,6 +541,6 @@ export function PatternEditor({ patternId }: Props) {
       )}
 
       {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={() => setToast(null)} />}
-    </div>
+    </>
   );
 }

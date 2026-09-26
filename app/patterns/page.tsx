@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Pattern } from '@/lib/types';
 import { expandSteps, progressFraction } from '@/lib/track';
@@ -12,6 +13,7 @@ import { AppFooter } from '@/components/layout/AppFooter';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { CoverPlaceholder } from '@/components/ui/CoverPlaceholder';
 import { Toast } from '@/components/ui/Toast';
+import { PatternEditor } from '@/components/patterns/PatternEditor';
 import styles from './page.module.css';
 
 type Tab = 'active' | 'done';
@@ -33,10 +35,20 @@ function describe(p: Pattern) {
 }
 
 export default function PatternsPage() {
+  const router = useRouter();
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('active');
   const [error, setError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  // /patterns/new redirects here with ?new so old links still open the form.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('new')) {
+      setCreating(true);
+      router.replace('/patterns');
+    }
+  }, [router]);
 
   useEffect(() => {
     createClient()
@@ -68,7 +80,7 @@ export default function PatternsPage() {
             </div>
             <div className={styles.actions}>
               <Link href="/patterns/import" className={styles.importBtn}>Import pattern</Link>
-              <Link href="/patterns/new" className={styles.newBtn}>+ New pattern</Link>
+              <button onClick={() => setCreating(true)} className={styles.newBtn}>+ New pattern</button>
             </div>
           </div>
 
@@ -81,7 +93,7 @@ export default function PatternsPage() {
               ) : (
                 <>
                   <p>No patterns here yet.</p>
-                  <Link href="/patterns/new" className={styles.emptyLink}>Add your first pattern</Link>
+                  <button onClick={() => setCreating(true)} className={styles.emptyLink}>Add your first pattern</button>
                 </>
               )}
             </div>
@@ -117,6 +129,10 @@ export default function PatternsPage() {
       </main>
 
       <AppFooter />
+
+      {creating && (
+        <PatternEditor onClose={() => setCreating(false)} onSaved={(id) => router.push(`/patterns/${id}`)} />
+      )}
 
       {error && <Toast message={error} variant="error" onDismiss={() => setError(null)} />}
     </div>

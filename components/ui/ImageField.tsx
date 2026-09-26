@@ -2,9 +2,9 @@
 
 import { useRef, useState } from 'react';
 import { MAX_IMAGE_BYTES } from '@/lib/images';
-import { ImageIcon } from '@/components/ui/icons';
-import buttons from '@/components/ui/buttons.module.css';
-import styles from './PatternImageField.module.css';
+import { ImageIcon } from './icons';
+import buttons from './buttons.module.css';
+import styles from './ImageField.module.css';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
@@ -14,9 +14,12 @@ type Props = {
   onPick: (file: File) => void;
   onRemove: () => void;
   onError: (message: string) => void;
+  /** What the image shows, e.g. "A photo of the finished piece or the pattern chart". */
+  hint: string;
+  alt: string;
 };
 
-export function PatternImageField({ src, onPick, onRemove, onError }: Props) {
+export function ImageField({ src, onPick, onRemove, onError, hint, alt }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -42,7 +45,7 @@ export function PatternImageField({ src, onPick, onRemove, onError }: Props) {
       {src ? (
         <div className={styles.preview}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="Pattern" className={styles.previewImg} />
+          <img src={src} alt={alt} className={styles.previewImg} />
           <div className={styles.previewActions}>
             <button type="button" onClick={browse} className={buttons.secondary}>Replace</button>
             <button type="button" onClick={onRemove} className={buttons.danger}>Remove</button>
@@ -59,7 +62,7 @@ export function PatternImageField({ src, onPick, onRemove, onError }: Props) {
         >
           <span className={styles.dropIcon}><ImageIcon size={22} /></span>
           <span className={styles.dropTitle}>Upload an image</span>
-          <span className={styles.dropHint}>A photo of the finished piece or the pattern chart · JPG, PNG, WebP or GIF, up to 5 MB</span>
+          <span className={styles.dropHint}>{hint} · JPG, PNG, WebP or GIF, up to 5 MB</span>
         </button>
       )}
     </div>
