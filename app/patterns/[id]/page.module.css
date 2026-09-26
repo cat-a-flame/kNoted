@@ -271,7 +271,7 @@
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border);
@@ -304,9 +304,11 @@
   justify-content: center;
 }
 
+/* Phones: a full-width square would push the counter off screen. */
 @media (max-width: 767px) {
   .coverCard {
-    aspect-ratio: 16 / 9;
+    max-width: 16rem;
+    margin: 0 auto;
   }
 }
 
