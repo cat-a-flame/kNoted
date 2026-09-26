@@ -37,6 +37,7 @@ export type Pattern = {
   hook_size: string | null;
   yarn_summary: string | null;
   worked_in: WorkedIn;
+  image_path: string | null;
   current_step: number;
   current_stitch: number;
   started_at: string | null;

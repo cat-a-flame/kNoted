@@ -27,7 +27,7 @@ type Draft = {
 const EMPTY_DRAFT: Draft = {
   brand: '',
   colour_name: '',
-  colour_hex: '#C1613F',
+  colour_hex: '#7A5AA6',
   fiber: '',
   hook: '',
   skein: '',

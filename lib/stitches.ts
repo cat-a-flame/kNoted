@@ -15,11 +15,11 @@ type StitchInfo = {
 
 export const STITCHES: Record<StitchType, StitchInfo> = {
   sc: { abbr: 'sc', label: 'Single crochet', produces: 1, strong: '#8A7A68', light: '#E8E6DC', chipBg: '#EFEBE3', chipFg: '#5B5347' },
-  inc: { abbr: 'inc', label: 'Increase', produces: 2, strong: '#C1613F', light: '#F3E1D6', chipBg: '#F3E1D6', chipFg: '#8A4326' },
+  inc: { abbr: 'inc', label: 'Increase', produces: 2, strong: '#7A5AA6', light: '#E6DCF2', chipBg: '#EDE5F6', chipFg: '#5B3F86' },
   dec: { abbr: 'dec', label: 'Decrease', produces: 1, strong: '#74855F', light: '#DCE3D2', chipBg: '#E7ECDD', chipFg: '#4D5B3D' },
   hdc: { abbr: 'hdc', label: 'Half double crochet', produces: 1, strong: '#B08A3E', light: '#F1E6CC', chipBg: '#F4EBD6', chipFg: '#7A5C1E' },
   dc: { abbr: 'dc', label: 'Double crochet', produces: 1, strong: '#6F8296', light: '#DFE5EB', chipBg: '#E4E9EE', chipFg: '#465566' },
-  tr: { abbr: 'tr', label: 'Treble crochet', produces: 1, strong: '#8B6A86', light: '#EADFE8', chipBg: '#EFE5ED', chipFg: '#5E4459' },
+  tr: { abbr: 'tr', label: 'Treble crochet', produces: 1, strong: '#4F8A8B', light: '#DCEBEB', chipBg: '#E1EEEE', chipFg: '#2F5E5F' },
   ch: { abbr: 'ch', label: 'Chain', produces: 1, strong: '#B0AEA5', light: '#EEEDE8', chipBg: '#F1F0EC', chipFg: '#6B675E' },
   slst: { abbr: 'sl st', label: 'Slip stitch', produces: 1, strong: '#5B5347', light: '#E3DED6', chipBg: '#E8E3DB', chipFg: '#332A22' },
 };

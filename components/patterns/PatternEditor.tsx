@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Pattern, StitchType, WorkedIn, Yarn } from '@/lib/types';
 import { STITCHES, STITCH_ORDER, instructionText, suggestedEndCount } from '@/lib/stitches';
+import { patternImageUrl, removePatternImage, uploadPatternImage } from '@/lib/images';
 import { AppTabs } from '@/components/layout/AppTabs';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Toast } from '@/components/ui/Toast';
+import { PatternImageField } from './PatternImageField';
 import { BackspaceIcon, ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon, CloseIcon, CopyIcon, PlusIcon } from '@/components/ui/icons';
 import buttons from '@/components/ui/buttons.module.css';
 import styles from './PatternEditor.module.css';
@@ -60,6 +62,13 @@ export function PatternEditor({ patternId }: Props) {
   const [workedIn, setWorkedIn] = useState<WorkedIn>('rounds');
   const [steps, setSteps] = useState<DraftStep[]>(() => [blankStep(false)]);
   const [yarns, setYarns] = useState<Yarn[]>([]);
+  /** Path already saved on the pattern. */
+  const [imagePath, setImagePath] = useState<string | null>(null);
+  /** undefined = unchanged, null = remove, File = replace on save. */
+  const [imageChange, setImageChange] = useState<File | null | undefined>(undefined);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  /** Set once a new pattern is inserted, so a retry after a failed upload updates instead of duplicating. */
+  const [createdId, setCreatedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +92,7 @@ export function PatternEditor({ patternId }: Props) {
         setHookSize(p.hook_size ?? '');
         setYarnSummary(p.yarn_summary ?? '');
         setWorkedIn(p.worked_in);
+        setImagePath(p.image_path);
         const sorted = [...(p.pattern_steps ?? [])].sort((a, b) => a.position - b.position);
         setSteps(
           sorted.map((s) => ({
@@ -100,6 +110,15 @@ export function PatternEditor({ patternId }: Props) {
         setLoading(false);
       });
   }, [patternId]);
+
+  useEffect(() => {
+    if (!(imageChange instanceof File)) { setImagePreview(null); return; }
+    const url = URL.createObjectURL(imageChange);
+    setImagePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageChange]);
+
+  const imageSrc = imageChange === null ? null : imagePreview ?? patternImageUrl(imagePath);
 
   const unitWord = workedIn === 'rounds' ? 'Round' : 'Row';
 
@@ -152,7 +171,7 @@ export function PatternEditor({ patternId }: Props) {
       updated_at: new Date().toISOString(),
     };
 
-    let id = patternId;
+    let id = patternId ?? createdId ?? undefined;
     if (id) {
       const { error } = await supabase.from('patterns').update(fields).eq('id', id);
       if (error) { setError(error.message); setSaving(false); return; }
@@ -160,6 +179,7 @@ export function PatternEditor({ patternId }: Props) {
       const { data, error } = await supabase.from('patterns').insert(fields).select('id').single();
       if (error) { setError(error.message); setSaving(false); return; }
       id = data.id;
+      setCreatedId(data.id);
     }
 
     const payload = steps.map((s) => {
@@ -180,6 +200,27 @@ export function PatternEditor({ patternId }: Props) {
     const { error: stepsError } = await supabase.rpc('replace_pattern_steps', { p_pattern_id: id, p_steps: payload });
     if (stepsError) { setError(stepsError.message); setSaving(false); return; }
 
+    if (imageChange !== undefined) {
+      try {
+        let nextPath: string | null = null;
+        if (imageChange) {
+          const { data: auth } = await supabase.auth.getUser();
+          if (!auth.user) throw new Error('Not signed in.');
+          nextPath = await uploadPatternImage(auth.user.id, id!, imageChange);
+        }
+        const { error: imgError } = await supabase.from('patterns').update({ image_path: nextPath }).eq('id', id);
+        if (imgError) throw imgError;
+        if (imagePath && imagePath !== nextPath) await removePatternImage(imagePath);
+        setImagePath(nextPath);
+        setImageChange(undefined);
+      } catch (err) {
+        // The pattern itself is saved; stay here so the image can be retried.
+        setError(`Pattern saved, but the image could not be uploaded: ${err instanceof Error ? err.message : String(err)}`);
+        setSaving(false);
+        return;
+      }
+    }
+
     router.push(`/patterns/${id}`);
   };
 
@@ -187,6 +228,7 @@ export function PatternEditor({ patternId }: Props) {
     setConfirm(null);
     const { error } = await createClient().from('patterns').delete().eq('id', patternId!);
     if (error) { setToast({ message: error.message, variant: 'error' }); return; }
+    await removePatternImage(imagePath);
     router.push('/patterns');
   };
 
@@ -224,6 +266,15 @@ export function PatternEditor({ patternId }: Props) {
           <div>
             <FormLabel htmlFor="p-name">Pattern name</FormLabel>
             <Input id="p-name" placeholder="e.g. Little Pumpkin" value={name} onChange={(e) => setName(e.target.value)} autoFocus={!isEdit} />
+          </div>
+          <div>
+            <FormLabel>Image (optional)</FormLabel>
+            <PatternImageField
+              src={imageSrc}
+              onPick={(file) => setImageChange(file)}
+              onRemove={() => setImageChange(imagePath ? null : undefined)}
+              onError={(message) => setToast({ message, variant: 'error' })}
+            />
           </div>
           <div className={styles.grid3}>
             <div>

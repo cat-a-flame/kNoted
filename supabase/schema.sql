@@ -43,6 +43,7 @@ create table public.patterns (
   hook_size      text,
   yarn_summary   text,                       -- e.g. "cotton yarn"
   worked_in      text not null default 'rounds' check (worked_in in ('rounds', 'rows')),
+  image_path     text,                       -- storage path in the "pattern-images" bucket (see 002_pattern_images.sql)
   -- tracker state (index into the expanded step list, see pattern_steps.times)
   current_step   integer not null default 0 check (current_step >= 0),
   current_stitch integer not null default 0 check (current_stitch >= 0),
@@ -125,7 +126,8 @@ begin
 end;
 $$;
 
--- 7. Old storage bucket ---------------------------------------
--- v2 no longer uses cover images. If you want to remove the old
--- bucket, empty and delete "pattern-covers" from Storage in the
--- dashboard (Storage → pattern-covers → Delete bucket).
+-- 7. Storage --------------------------------------------------
+-- Pattern images use the "pattern-images" bucket, created by
+-- 002_pattern_images.sql — run that file next.
+-- The v1 "pattern-covers" bucket is no longer used; you can empty and
+-- delete it from the dashboard (Storage → pattern-covers → Delete bucket).

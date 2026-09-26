@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { Pattern } from '@/lib/types';
 import { expandSteps, progressFraction } from '@/lib/track';
 import { clamp, patternMeta } from '@/lib/utils';
+import { patternImageUrl } from '@/lib/images';
 import { AppTabs } from '@/components/layout/AppTabs';
 import { Toast } from '@/components/ui/Toast';
 import { CheckIcon, PlusIcon, YarnBallIcon } from '@/components/ui/icons';
@@ -75,6 +76,7 @@ export default function PatternsPage() {
             {patterns.map((p) => {
               const { state, pct, label } = describe(p);
               const meta = patternMeta(p.hook_size, p.yarn_summary);
+              const imageUrl = patternImageUrl(p.image_path);
               return (
                 <Link
                   key={p.id}
@@ -83,7 +85,17 @@ export default function PatternsPage() {
                   className={`${styles.card} ${state === 'new' ? styles.cardNew : ''}`}
                 >
                   <div className={`${styles.thumb} ${styles[`thumb_${state}`]}`}>
-                    {state === 'finished' ? <CheckIcon size={30} strokeWidth={2} /> : <YarnBallIcon />}
+                    {imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={imageUrl} alt="" className={styles.thumbImg} loading="lazy" />
+                    ) : state === 'finished' ? (
+                      <CheckIcon size={30} strokeWidth={2} />
+                    ) : (
+                      <YarnBallIcon />
+                    )}
+                    {imageUrl && state === 'finished' && (
+                      <span className={styles.thumbCheck}><CheckIcon size={12} strokeWidth={3} /></span>
+                    )}
                   </div>
                   <div className={styles.name}>{p.name}</div>
                   <div className={styles.meta}>{meta || ' '}</div>

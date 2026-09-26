@@ -29,3 +29,13 @@ export const YarnBallIcon = (p: IconProps) => (
     <path d="M14.8 4c-.4 3 .9 6.4 5.6 5.4" />
   </Svg>
 );
+
+export const ImageIcon = (p: IconProps) => (
+  <Svg strokeWidth={2} {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="3" />
+    <circle cx="9" cy="10" r="1.8" />
+    <path d="M21 16l-5-5-8 9" />
+  </Svg>
+);
+
+export const ExpandIcon = (p: IconProps) => <Svg strokeWidth={2.2} {...p}><path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6" /></Svg>;

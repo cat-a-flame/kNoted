@@ -9,9 +9,10 @@ import type { Pattern, Yarn } from '@/lib/types';
 import { STITCHES } from '@/lib/stitches';
 import { expandSteps, progressFraction, stepSubtitle, usedStitches } from '@/lib/track';
 import { clamp, patternMeta } from '@/lib/utils';
+import { patternImageUrl } from '@/lib/images';
 import { StitchLayout } from '@/components/workspace/StitchLayout';
 import { Toast } from '@/components/ui/Toast';
-import { CheckIcon, ChevronLeftIcon, MinusIcon, PencilIcon, PlusIcon } from '@/components/ui/icons';
+import { CheckIcon, ChevronLeftIcon, CloseIcon, ExpandIcon, MinusIcon, PencilIcon, PlusIcon } from '@/components/ui/icons';
 import styles from './page.module.css';
 
 const RING_CIRC = 452.4;
@@ -25,6 +26,7 @@ export default function WorkspacePage() {
   const [progress, setProgress] = useState<Progress>({ step: 0, stitch: 0, startedAt: null, finishedAt: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageOpen, setImageOpen] = useState(false);
   const activeRowRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -108,6 +110,10 @@ export default function WorkspacePage() {
   // Handled even when a button has focus, so clicking a step and then pressing space counts.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (imageOpen) {
+        if (e.key === 'Escape') setImageOpen(false);
+        return;
+      }
       const target = e.target as HTMLElement;
       if (target.closest('input, textarea, select')) return;
       if (e.key === ' ' || e.key === '+' || e.key === 'ArrowRight') {
@@ -124,7 +130,7 @@ export default function WorkspacePage() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [inc, dec, advance, stepComplete, countable, finished]);
+  }, [inc, dec, advance, stepComplete, countable, finished, imageOpen]);
 
   useEffect(() => {
     activeRowRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -145,6 +151,7 @@ export default function WorkspacePage() {
   const UnitWord = unitWord[0].toUpperCase() + unitWord.slice(1);
   const pct = progressFraction(steps, idx, stitchesMade, finished);
   const meta = patternMeta(pattern.hook_size, pattern.yarn_summary);
+  const imageUrl = patternImageUrl(pattern.image_path);
   const stitchKey = usedStitches(steps);
   const nextToken = countable && !stepComplete ? step.unit[stitchesMade % step.unit.length] : null;
   const repeatIndex = countable ? Math.min(Math.floor(stitchesMade / step.unit.length) + 1, step.repeat) : 0;
@@ -164,6 +171,13 @@ export default function WorkspacePage() {
           </div>
           <div className={styles.patternName}>{pattern.name}</div>
           {meta && <div className={styles.patternMeta}>{meta}</div>}
+          {imageUrl && (
+            <button onClick={() => setImageOpen(true)} className={styles.imageThumb} aria-label="View pattern image">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imageUrl} alt="" />
+              <span className={styles.imageExpand}><ExpandIcon size={13} /></span>
+            </button>
+          )}
         </div>
 
         <div className={styles.progressRow}>
@@ -272,7 +286,7 @@ export default function WorkspacePage() {
               <svg width="180" height="180" viewBox="0 0 180 180" className={styles.dialSvg}>
                 <circle cx="90" cy="90" r="72" fill="none" stroke="#EFEBE3" strokeWidth="12" />
                 <circle
-                  cx="90" cy="90" r="72" fill="none" stroke="#C1613F" strokeWidth="12" strokeLinecap="round"
+                  cx="90" cy="90" r="72" fill="none" stroke="#7A5AA6" strokeWidth="12" strokeLinecap="round"
                   strokeDasharray={RING_CIRC} strokeDashoffset={RING_CIRC * (1 - ringPct)}
                   className={styles.dialArc}
                 />
@@ -312,6 +326,16 @@ export default function WorkspacePage() {
           </div>
         )}
       </aside>
+
+      {imageOpen && imageUrl && (
+        <div className={styles.lightbox} role="dialog" aria-modal="true" aria-label={`${pattern.name} image`} onClick={() => setImageOpen(false)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imageUrl} alt={pattern.name} className={styles.lightboxImg} onClick={(e) => e.stopPropagation()} />
+          <button className={styles.lightboxClose} onClick={() => setImageOpen(false)} aria-label="Close image" autoFocus>
+            <CloseIcon size={18} />
+          </button>
+        </div>
+      )}
 
       {error && <Toast message={error} variant="error" onDismiss={() => setError(null)} />}
     </div>

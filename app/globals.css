@@ -14,10 +14,10 @@
   --color-text-muted: #8a7a68;
   --color-text-faint: #b0aea5;
 
-  /* Accent — terracotta (primary actions, "increase") */
-  --color-accent: #c1613f;
-  --color-accent-dark: #8a4326;
-  --color-accent-light: #f3e1d6;
+  /* Accent — heather purple (primary actions, "increase") */
+  --color-accent: #7a5aa6;
+  --color-accent-dark: #5b3f86;
+  --color-accent-light: #ede5f6;
 
   /* Secondary — sage ("complete", "decrease") */
   --color-sage: #74855f;
